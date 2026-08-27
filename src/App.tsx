@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-type Screen = "dashboard" | "log" | "medications" | "appointments" | "caregivers" | "routines" | "symptoms" | "incidents";
+type Screen = "dashboard" | "log" | "medications" | "appointments" | "caregivers" | "routines" | "health";
 
 interface Medication {
   id: string;
@@ -370,7 +370,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> 
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
 
-function Dashboard({ medications, symptoms, log }: { medications: Medication[]; symptoms: Symptom[]; log: LogEntry[] }) {
+function Dashboard({ medications, symptoms, log, onReportIncident }: { medications: Medication[]; symptoms: Symptom[]; log: LogEntry[]; onReportIncident: () => void }) {
   const allDoses = medications.flatMap((m) => m.todayDoses);
   const given = allDoses.filter((d) => d.given).length;
   const pending = allDoses.length - given;
@@ -385,6 +385,21 @@ function Dashboard({ medications, symptoms, log }: { medications: Medication[]; 
         <div style={{ fontSize: 13, opacity: 0.85 }}>Age {PATIENT.age} · {PATIENT.conditions[0]}</div>
         <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{PATIENT.conditions[1]}</div>
       </Card>
+
+      {/* Report incident — always visible, no navigation required */}
+      <button
+        onClick={onReportIncident}
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          width: "100%", padding: "14px", background: "var(--color-danger-bg)", border: "1.5px solid var(--color-danger)",
+          borderRadius: 12, cursor: "pointer", fontFamily: "inherit", minHeight: 44,
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <span style={{ fontSize: 15, fontWeight: 700, color: "var(--color-danger)" }}>Report an Incident</span>
+      </button>
 
       {/* Medication progress */}
       <Card>
@@ -915,104 +930,46 @@ function Routines() {
   );
 }
 
-function Symptoms({ symptoms, setSymptoms }: { symptoms: Symptom[]; setSymptoms: React.Dispatch<React.SetStateAction<Symptom[]>> }) {
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh" });
+type HealthEvent = (Symptom & { kind: "symptom" }) | (Incident & { kind: "incident" });
 
-  const severityLabels = ["", "Very mild", "Mild", "Moderate", "Significant", "Severe"];
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const now = new Date();
-    setSymptoms((prev) => [{
-      id: `s${Date.now()}`,
-      date: "2026-08-26",
-      time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      symptom: form.symptom,
-      severity: parseInt(form.severity) as 1 | 2 | 3 | 4 | 5,
-      notes: form.notes,
-      category: form.category,
-      loggedBy: form.loggedBy,
-    }, ...prev]);
-    setShowForm(false);
-    setForm({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh" });
-  }
-
-  return (
-    <div>
-      <PageHeader
-        title="Observations"
-        subtitle="Symptoms and notable changes"
-        action={
-          <button
-            onClick={() => setShowForm(!showForm)}
-            style={{ padding: "10px 16px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
-          >
-            + Log
-          </button>
-        }
-      />
-
-      {showForm && (
-        <Card style={{ marginBottom: 20, border: "1.5px solid var(--color-primary)" }}>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Observation</div>
-          <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>What happened?</label>
-              <input value={form.symptom} onChange={(e) => setForm((p) => ({ ...p, symptom: e.target.value }))} required placeholder="e.g. Tremor worse, glucose elevated..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>
-                Severity — <span style={{ fontWeight: 400 }}>{severityLabels[parseInt(form.severity)]}</span>
-              </label>
-              <input type="range" min="1" max="5" value={form.severity} onChange={(e) => setForm((p) => ({ ...p, severity: e.target.value }))} style={{ width: "100%", accentColor: "var(--color-primary)", height: 6, cursor: "pointer" }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Category</label>
-              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
-                {["Motor", "Cognitive", "Diabetes", "Pain", "Sleep", "Mood", "Other"].map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Notes (optional)</label>
-              <textarea value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} rows={3} placeholder="Context, what was happening, what helped..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Logged by</label>
-              <select value={form.loggedBy} onChange={(e) => setForm((p) => ({ ...p, loggedBy: e.target.value }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
-                {caregivers.map((c) => <option key={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button type="submit" style={{ flex: 1, padding: "13px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: "13px", background: "var(--color-muted)", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", color: "var(--color-muted-foreground)", fontFamily: "inherit" }}>Cancel</button>
-            </div>
-          </form>
-        </Card>
-      )}
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {symptoms.map((s) => (
-          <Card key={s.id}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-              <div style={{ flex: 1, paddingRight: 10 }}>
-                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 3 }}>{s.symptom}</div>
-                <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{s.date} · {s.time} · {s.loggedBy}</div>
-              </div>
-              <Pill label={s.category} color="var(--color-muted-foreground)" bg="var(--color-muted)" />
-            </div>
-            <SeverityBar level={s.severity} showLabel />
-            {s.notes && <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginTop: 8, lineHeight: 1.5 }}>{s.notes}</div>}
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
+function eventTimestamp(date: string, time: string) {
+  const match = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  let hour = match ? parseInt(match[1], 10) % 12 : 0;
+  if (match && /pm/i.test(match[3])) hour += 12;
+  const minute = match ? parseInt(match[2], 10) : 0;
+  return new Date(`${date}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`).getTime();
 }
 
-function Incidents({ incidents, setIncidents }: { incidents: Incident[]; setIncidents: React.Dispatch<React.SetStateAction<Incident[]>> }) {
+function kindToggleStyle(active: boolean, danger: boolean): React.CSSProperties {
+  return {
+    flex: 1, padding: "12px", borderRadius: 10, minHeight: 44,
+    border: "1.5px solid " + (active ? (danger ? "var(--color-danger)" : "var(--color-primary)") : "var(--color-border)"),
+    background: active ? (danger ? "var(--color-danger-bg)" : "var(--color-secondary)") : "transparent",
+    color: active ? (danger ? "var(--color-danger)" : "var(--color-primary)") : "var(--color-muted-foreground)",
+    fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+  };
+}
+
+function HealthLog({
+  symptoms, setSymptoms, incidents, setIncidents, autoOpenKind, onAutoOpenHandled,
+}: {
+  symptoms: Symptom[]; setSymptoms: React.Dispatch<React.SetStateAction<Symptom[]>>;
+  incidents: Incident[]; setIncidents: React.Dispatch<React.SetStateAction<Incident[]>>;
+  autoOpenKind: "symptom" | "incident" | null;
+  onAutoOpenHandled: () => void;
+}) {
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ type: "", severity: "minor" as Incident["severity"], description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
+  const [kind, setKind] = useState<"symptom" | "incident">("symptom");
+  const [symptomForm, setSymptomForm] = useState({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh" });
+  const [incidentForm, setIncidentForm] = useState({ type: "", severity: "minor" as Incident["severity"], description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
+
+  useEffect(() => {
+    if (autoOpenKind) {
+      setKind(autoOpenKind);
+      setShowForm(true);
+      onAutoOpenHandled();
+    }
+  }, [autoOpenKind, onAutoOpenHandled]);
 
   const sevConfig: Record<string, { color: string; bg: string }> = {
     minor: { color: "var(--color-muted-foreground)", bg: "var(--color-muted)" },
@@ -1020,29 +977,49 @@ function Incidents({ incidents, setIncidents }: { incidents: Incident[]; setInci
     serious: { color: "var(--color-danger)", bg: "var(--color-danger-bg)" },
   };
 
+  const events: HealthEvent[] = [
+    ...symptoms.map((s) => ({ ...s, kind: "symptom" as const })),
+    ...incidents.map((i) => ({ ...i, kind: "incident" as const })),
+  ].sort((a, b) => eventTimestamp(b.date, b.time) - eventTimestamp(a.date, a.time));
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const now = new Date();
-    setIncidents((prev) => [{
-      id: `i${Date.now()}`,
-      date: "2026-08-26",
-      time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      type: form.type,
-      severity: form.severity,
-      description: form.description,
-      response: form.response,
-      doctorNotified: form.doctorNotified,
-      loggedBy: form.loggedBy,
-    }, ...prev]);
+    const time = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    if (kind === "symptom") {
+      setSymptoms((prev) => [{
+        id: `s${Date.now()}`,
+        date: "2026-08-26",
+        time,
+        symptom: symptomForm.symptom,
+        severity: parseInt(symptomForm.severity) as 1 | 2 | 3 | 4 | 5,
+        notes: symptomForm.notes,
+        category: symptomForm.category,
+        loggedBy: symptomForm.loggedBy,
+      }, ...prev]);
+      setSymptomForm({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh" });
+    } else {
+      setIncidents((prev) => [{
+        id: `i${Date.now()}`,
+        date: "2026-08-26",
+        time,
+        type: incidentForm.type,
+        severity: incidentForm.severity,
+        description: incidentForm.description,
+        response: incidentForm.response,
+        doctorNotified: incidentForm.doctorNotified,
+        loggedBy: incidentForm.loggedBy,
+      }, ...prev]);
+      setIncidentForm({ type: "", severity: "minor", description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
+    }
     setShowForm(false);
-    setForm({ type: "", severity: "minor", description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
   }
 
   return (
     <div>
       <PageHeader
-        title="Incidents"
-        subtitle="Falls, acute events, and medication errors"
+        title="Health Log"
+        subtitle="Symptoms, illness changes, and one-off incidents"
         action={
           <button
             onClick={() => setShowForm(!showForm)}
@@ -1054,64 +1031,115 @@ function Incidents({ incidents, setIncidents }: { incidents: Incident[]; setInci
       />
 
       {showForm && (
-        <Card style={{ marginBottom: 20, border: "1.5px solid var(--color-primary)" }}>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Incident</div>
-          <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Type</label>
-              <input value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))} required placeholder="e.g. Fall, Medication error..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Severity</label>
-              <select value={form.severity} onChange={(e) => setForm((p) => ({ ...p, severity: e.target.value as Incident["severity"] }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
-                {(["minor", "moderate", "serious"] as const).map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>What happened?</label>
-              <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} required rows={3} placeholder="Description of the event..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
-            </div>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Response</label>
-              <textarea value={form.response} onChange={(e) => setForm((p) => ({ ...p, response: e.target.value }))} required rows={3} placeholder="What was done in response..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
-            </div>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--color-foreground)", cursor: "pointer" }}>
-              <input type="checkbox" checked={form.doctorNotified} onChange={(e) => setForm((p) => ({ ...p, doctorNotified: e.target.checked }))} style={{ width: 18, height: 18, accentColor: "var(--color-primary)", cursor: "pointer" }} />
-              Doctor notified
-            </label>
-            <div>
-              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Logged by</label>
-              <select value={form.loggedBy} onChange={(e) => setForm((p) => ({ ...p, loggedBy: e.target.value }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
-                {caregivers.map((c) => <option key={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button type="submit" style={{ flex: 1, padding: "13px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: "13px", background: "var(--color-muted)", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", color: "var(--color-muted-foreground)", fontFamily: "inherit" }}>Cancel</button>
-            </div>
-          </form>
+        <Card style={{ marginBottom: 20, border: "1.5px solid " + (kind === "incident" ? "var(--color-danger)" : "var(--color-primary)") }}>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>New Entry</div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            <button type="button" onClick={() => setKind("symptom")} style={kindToggleStyle(kind === "symptom", false)}>Observation</button>
+            <button type="button" onClick={() => setKind("incident")} style={kindToggleStyle(kind === "incident", true)}>Incident</button>
+          </div>
+
+          {kind === "symptom" ? (
+            <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>What happened?</label>
+                <input value={symptomForm.symptom} onChange={(e) => setSymptomForm((p) => ({ ...p, symptom: e.target.value }))} required placeholder="e.g. Tremor worse, glucose elevated..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>
+                  Severity — <span style={{ fontWeight: 400 }}>{SEVERITY_LABELS[parseInt(symptomForm.severity)]}</span>
+                </label>
+                <input type="range" min="1" max="5" value={symptomForm.severity} onChange={(e) => setSymptomForm((p) => ({ ...p, severity: e.target.value }))} style={{ width: "100%", accentColor: "var(--color-primary)", height: 6, cursor: "pointer" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Category</label>
+                <select value={symptomForm.category} onChange={(e) => setSymptomForm((p) => ({ ...p, category: e.target.value }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
+                  {["Motor", "Cognitive", "Diabetes", "Pain", "Sleep", "Mood", "Other"].map((c) => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Notes (optional)</label>
+                <textarea value={symptomForm.notes} onChange={(e) => setSymptomForm((p) => ({ ...p, notes: e.target.value }))} rows={3} placeholder="Context, what was happening, what helped..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Logged by</label>
+                <select value={symptomForm.loggedBy} onChange={(e) => setSymptomForm((p) => ({ ...p, loggedBy: e.target.value }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
+                  {caregivers.map((c) => <option key={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button type="submit" style={{ flex: 1, padding: "13px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+                <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: "13px", background: "var(--color-muted)", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", color: "var(--color-muted-foreground)", fontFamily: "inherit" }}>Cancel</button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Type</label>
+                <input value={incidentForm.type} onChange={(e) => setIncidentForm((p) => ({ ...p, type: e.target.value }))} required placeholder="e.g. Fall, Medication error..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Severity</label>
+                <select value={incidentForm.severity} onChange={(e) => setIncidentForm((p) => ({ ...p, severity: e.target.value as Incident["severity"] }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
+                  {(["minor", "moderate", "serious"] as const).map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>What happened?</label>
+                <textarea value={incidentForm.description} onChange={(e) => setIncidentForm((p) => ({ ...p, description: e.target.value }))} required rows={3} placeholder="Description of the event..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Response</label>
+                <textarea value={incidentForm.response} onChange={(e) => setIncidentForm((p) => ({ ...p, response: e.target.value }))} required rows={3} placeholder="What was done in response..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--color-foreground)", cursor: "pointer" }}>
+                <input type="checkbox" checked={incidentForm.doctorNotified} onChange={(e) => setIncidentForm((p) => ({ ...p, doctorNotified: e.target.checked }))} style={{ width: 18, height: 18, accentColor: "var(--color-primary)", cursor: "pointer" }} />
+                Doctor notified
+              </label>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Logged by</label>
+                <select value={incidentForm.loggedBy} onChange={(e) => setIncidentForm((p) => ({ ...p, loggedBy: e.target.value }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
+                  {caregivers.map((c) => <option key={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button type="submit" style={{ flex: 1, padding: "13px", background: "var(--color-danger)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+                <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: "13px", background: "var(--color-muted)", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", color: "var(--color-muted-foreground)", fontFamily: "inherit" }}>Cancel</button>
+              </div>
+            </form>
+          )}
         </Card>
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {incidents.map((inc) => {
-          const sev = sevConfig[inc.severity];
-          return (
-            <Card key={inc.id} style={{ borderLeft: `3px solid ${sev.color}` }}>
+        {events.map((ev) =>
+          ev.kind === "symptom" ? (
+            <Card key={`symptom-${ev.id}`} style={{ borderLeft: "3px solid var(--color-primary)" }}>
               <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
-                <Pill label={inc.type} color={sev.color} bg={sev.bg} />
-                <Pill label={inc.severity.charAt(0).toUpperCase() + inc.severity.slice(1)} color={sev.color} bg={sev.bg} />
-                {inc.doctorNotified && <Pill label="Doctor notified" color="var(--color-success)" bg="var(--color-success-bg)" />}
+                <Pill label="Observation" color="var(--color-primary)" bg="var(--color-secondary)" />
+                <Pill label={ev.category} color="var(--color-muted-foreground)" bg="var(--color-muted)" />
               </div>
-              <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginBottom: 8 }}>{formatDate(inc.date)} · {inc.time} · {inc.loggedBy}</div>
-              <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 10, lineHeight: 1.5 }}>{inc.description}</div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 3 }}>{ev.symptom}</div>
+              <div style={{ fontSize: 13, color: "var(--color-muted-foreground)", marginBottom: 8 }}>{formatDate(ev.date)} · {ev.time} · {ev.loggedBy}</div>
+              <SeverityBar level={ev.severity} showLabel />
+              {ev.notes && <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginTop: 8, lineHeight: 1.5 }}>{ev.notes}</div>}
+            </Card>
+          ) : (
+            <Card key={`incident-${ev.id}`} style={{ borderLeft: `3px solid ${sevConfig[ev.severity].color}` }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                <Pill label="Incident" color={sevConfig[ev.severity].color} bg={sevConfig[ev.severity].bg} />
+                <Pill label={ev.type} color={sevConfig[ev.severity].color} bg={sevConfig[ev.severity].bg} />
+                <Pill label={ev.severity.charAt(0).toUpperCase() + ev.severity.slice(1)} color={sevConfig[ev.severity].color} bg={sevConfig[ev.severity].bg} />
+                {ev.doctorNotified && <Pill label="Doctor notified" color="var(--color-success)" bg="var(--color-success-bg)" />}
+              </div>
+              <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginBottom: 8 }}>{formatDate(ev.date)} · {ev.time} · {ev.loggedBy}</div>
+              <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 10, lineHeight: 1.5 }}>{ev.description}</div>
               <div style={{ background: "var(--color-muted)", borderRadius: 8, padding: "10px 12px" }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Response</div>
-                <div style={{ fontSize: 14, lineHeight: 1.5 }}>{inc.response}</div>
+                <div style={{ fontSize: 14, lineHeight: 1.5 }}>{ev.response}</div>
               </div>
             </Card>
-          );
-        })}
+          )
+        )}
       </div>
     </div>
   );
@@ -1153,7 +1181,7 @@ const NAV_ITEMS: { id: Screen; label: string; icon: (active: boolean) => React.R
     ),
   },
   {
-    id: "symptoms", label: "Observe",
+    id: "health", label: "Health",
     icon: (a) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={a ? "var(--color-primary)" : "var(--color-muted-foreground)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -1165,7 +1193,6 @@ const NAV_ITEMS: { id: Screen; label: string; icon: (active: boolean) => React.R
 const MORE_ITEMS: { id: Screen; label: string }[] = [
   { id: "caregivers", label: "Care Team" },
   { id: "log", label: "Log" },
-  { id: "incidents", label: "Incidents" },
 ];
 
 // ─── App Shell ────────────────────────────────────────────────────────────────
@@ -1177,6 +1204,13 @@ export default function App() {
   const [symptoms, setSymptoms] = useState(initialSymptoms);
   const [incidents, setIncidents] = useState(initialIncidents);
   const [showMore, setShowMore] = useState(false);
+  const [autoOpenKind, setAutoOpenKind] = useState<"symptom" | "incident" | null>(null);
+
+  function reportIncident() {
+    setAutoOpenKind("incident");
+    setScreen("health");
+    setShowMore(false);
+  }
 
   const isMoreScreen = MORE_ITEMS.some((m) => m.id === screen);
 
@@ -1184,14 +1218,19 @@ export default function App() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", maxWidth: 480, margin: "0 auto", background: "var(--color-background)", position: "relative" }}>
       {/* Content area */}
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px 100px" }}>
-        {screen === "dashboard" && <Dashboard medications={medications} symptoms={symptoms} log={initialLog} />}
+        {screen === "dashboard" && <Dashboard medications={medications} symptoms={symptoms} log={initialLog} onReportIncident={reportIncident} />}
         {screen === "log" && <CareLog log={initialLog} />}
         {screen === "medications" && <Medications medications={medications} setMedications={setMedications} />}
         {screen === "appointments" && <Appointments appointments={appointments} setAppointments={setAppointments} />}
         {screen === "caregivers" && <Caregivers />}
         {screen === "routines" && <Routines />}
-        {screen === "symptoms" && <Symptoms symptoms={symptoms} setSymptoms={setSymptoms} />}
-        {screen === "incidents" && <Incidents incidents={incidents} setIncidents={setIncidents} />}
+        {screen === "health" && (
+          <HealthLog
+            symptoms={symptoms} setSymptoms={setSymptoms}
+            incidents={incidents} setIncidents={setIncidents}
+            autoOpenKind={autoOpenKind} onAutoOpenHandled={() => setAutoOpenKind(null)}
+          />
+        )}
       </div>
 
       {/* More menu overlay */}
