@@ -39,3 +39,13 @@ This project uses **Tailwind CSS v4** through the `@tailwindcss/vite` plugin con
 - Use double quotes for strings containing apostrophes (`"We're here to help"`), or escape them in single-quoted strings. An unescaped apostrophe in a single-quoted string breaks the build.
 - Ensure JSX tags are closed and braces are balanced.
 - Export components as default exports.
+
+## Git Workflow
+
+- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) — `<type>(<scope>): <subject>`. Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`. Subject is imperative, lowercase, no trailing period.
+- **Branches**: cut from `main`, named `<type>/<short-kebab-description>` (e.g. `feat/incident-logging`, `fix/med-adherence-calc`). One logical change per branch.
+- **`main` is protected**: no direct commits and no force pushes to `main`. Every change lands through a pull request, including solo/self-authored work. `main` must always build and stay deployable.
+- **Force pushes**: never to `main` or any shared branch. Only rewrite history on your own not-yet-reviewed feature branch.
+- **Pull requests**: open a PR for every change. Squash-merge into `main` so each PR becomes exactly one commit, titled with a Conventional Commits message. Delete the branch after merge.
+- **Merge permission**: opening or updating a PR never implies merge rights. Get explicit sign-off before merging unless a specific PR's merge is pre-approved.
+- **Version bumps**: `package.json` `version` follows [semver](https://semver.org/) and is bumped in a dedicated commit on `main` at release time — not inside individual feature branches, to avoid bump conflicts across parallel PRs. Merged `fix` commits bump patch, `feat` bumps minor, any `BREAKING CHANGE` footer bumps major.
