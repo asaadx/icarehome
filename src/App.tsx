@@ -3,6 +3,7 @@ import type { Screen } from "./types/domain";
 import { useCareLog } from "./hooks/useCareLog";
 import { useMedications } from "./hooks/useMedications";
 import { useAppointments } from "./hooks/useAppointments";
+import { useRoutines } from "./hooks/useRoutines";
 import { useHealthEvents } from "./hooks/useHealthEvents";
 import Fab from "./components/ui/Fab";
 import BottomNav from "./components/layout/BottomNav";
@@ -20,6 +21,7 @@ export default function App() {
   const { log, addLogEntry } = useCareLog();
   const { medications, toggleDose, addMedication, updateMedication, deleteMedication } = useMedications(addLogEntry);
   const { appointments, savePrepNotes, saveOutcomeNotes, addAppointment } = useAppointments(addLogEntry);
+  const { routines, addRoutine, updateRoutine, deleteRoutine, toggleRoutineDone, moveRoutine } = useRoutines(addLogEntry);
   const { symptoms, incidents, addSymptom, addIncident } = useHealthEvents(addLogEntry);
   const [showMore, setShowMore] = useState(false);
   const [autoOpenKind, setAutoOpenKind] = useState<"symptom" | "incident" | null>(null);
@@ -59,7 +61,16 @@ export default function App() {
           />
         )}
         {screen === "caregivers" && <CaregiversScreen />}
-        {screen === "routines" && <RoutinesScreen />}
+        {screen === "routines" && (
+          <RoutinesScreen
+            routines={routines}
+            onAddRoutine={addRoutine}
+            onUpdateRoutine={updateRoutine}
+            onDeleteRoutine={deleteRoutine}
+            onToggleRoutineDone={toggleRoutineDone}
+            onMoveRoutine={moveRoutine}
+          />
+        )}
         {screen === "health" && (
           <HealthLogScreen
             symptoms={symptoms}
