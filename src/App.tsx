@@ -943,18 +943,16 @@ function HealthLog({
   autoOpenKind: "symptom" | "incident" | null;
   onAutoOpenHandled: () => void;
 }) {
-  const [showForm, setShowForm] = useState(false);
-  const [kind, setKind] = useState<"symptom" | "incident">("symptom");
+  const [showForm, setShowForm] = useState(autoOpenKind !== null);
+  const [kind, setKind] = useState<"symptom" | "incident">(autoOpenKind ?? "symptom");
   const [symptomForm, setSymptomForm] = useState({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh" });
   const [incidentForm, setIncidentForm] = useState({ type: "", severity: "minor" as Incident["severity"], description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
 
   useEffect(() => {
-    if (autoOpenKind) {
-      setKind(autoOpenKind);
-      setShowForm(true);
-      onAutoOpenHandled();
-    }
-  }, [autoOpenKind, onAutoOpenHandled]);
+    if (autoOpenKind) onAutoOpenHandled();
+    // Only consume the mount-time signal once; kind/showForm are seeded above, not re-derived on prop changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sevConfig: Record<string, { color: string; bg: string }> = {
     minor: { color: "var(--color-muted-foreground)", bg: "var(--color-muted)" },
