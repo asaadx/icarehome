@@ -11,6 +11,9 @@ import { kindToggleStyle } from "./kindToggleStyle";
 import SymptomForm from "./SymptomForm";
 import IncidentForm from "./IncidentForm";
 
+const editBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-primary)", background: "var(--color-secondary)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
+const deleteBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-danger)", background: "var(--color-danger-bg)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
+
 const sevConfig: Record<string, { color: string; bg: string }> = {
   minor: { color: "var(--color-muted-foreground)", bg: "var(--color-muted)" },
   moderate: { color: "var(--color-warning)", bg: "var(--color-warning-bg)" },
@@ -22,6 +25,10 @@ export default function HealthLogScreen({
   incidents,
   onAddSymptom,
   onAddIncident,
+  onUpdateSymptom,
+  onDeleteSymptom,
+  onUpdateIncident,
+  onDeleteIncident,
   autoOpenKind,
   onAutoOpenHandled,
 }: {
@@ -29,11 +36,16 @@ export default function HealthLogScreen({
   incidents: Incident[];
   onAddSymptom: (input: NewSymptomInput) => void;
   onAddIncident: (input: NewIncidentInput) => void;
+  onUpdateSymptom: (id: string, input: NewSymptomInput) => void;
+  onDeleteSymptom: (id: string) => void;
+  onUpdateIncident: (id: string, input: NewIncidentInput) => void;
+  onDeleteIncident: (id: string) => void;
   autoOpenKind: "symptom" | "incident" | null;
   onAutoOpenHandled: () => void;
 }) {
   const [showForm, setShowForm] = useState(autoOpenKind !== null);
   const [kind, setKind] = useState<"symptom" | "incident">(autoOpenKind ?? "symptom");
+  const [editingEvent, setEditingEvent] = useState<HealthEvent | null>(null);
 
   useEffect(() => {
     if (autoOpenKind) onAutoOpenHandled();
@@ -56,6 +68,24 @@ export default function HealthLogScreen({
     setShowForm(false);
   }
 
+  function handleSymptomSave(id: string, input: NewSymptomInput) {
+    onUpdateSymptom(id, input);
+    setEditingEvent(null);
+  }
+
+  function handleIncidentSave(id: string, input: NewIncidentInput) {
+    onUpdateIncident(id, input);
+    setEditingEvent(null);
+  }
+
+  function handleDelete(ev: HealthEvent) {
+    if (ev.kind === "symptom") {
+      onDeleteSymptom(ev.id);
+    } else {
+      onDeleteIncident(ev.id);
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -63,7 +93,7 @@ export default function HealthLogScreen({
         subtitle="Symptoms, illness changes, and one-off incidents"
       />
 
-      {showForm && (
+      {showForm && !editingEvent && (
         <Card style={{ marginBottom: 20, border: "1.5px solid " + (kind === "incident" ? "var(--color-danger)" : "var(--color-primary)") }}>
           <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>New Entry</div>
           <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
@@ -75,6 +105,17 @@ export default function HealthLogScreen({
             <SymptomForm onSubmit={handleSymptomSubmit} onCancel={() => setShowForm(false)} />
           ) : (
             <IncidentForm onSubmit={handleIncidentSubmit} onCancel={() => setShowForm(false)} />
+          )}
+        </Card>
+      )}
+
+      {editingEvent && (
+        <Card style={{ marginBottom: 20, border: "1.5px solid " + (editingEvent.kind === "incident" ? "var(--color-danger)" : "var(--color-primary)") }}>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Edit Entry</div>
+          {editingEvent.kind === "symptom" ? (
+            <SymptomForm symptom={editingEvent} onSave={handleSymptomSave} onCancel={() => setEditingEvent(null)} />
+          ) : (
+            <IncidentForm incident={editingEvent} onSave={handleIncidentSave} onCancel={() => setEditingEvent(null)} />
           )}
         </Card>
       )}
@@ -91,6 +132,10 @@ export default function HealthLogScreen({
               <div style={{ fontSize: 13, color: "var(--color-muted-foreground)", marginBottom: 8 }}>{formatDate(ev.date)} · {ev.time} · {ev.loggedBy}</div>
               <SeverityBar level={ev.severity} showLabel />
               {ev.notes && <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginTop: 8, lineHeight: 1.5 }}>{ev.notes}</div>}
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button onClick={() => setEditingEvent(ev)} style={editBtnStyle}>Edit</button>
+                <button onClick={() => handleDelete(ev)} style={deleteBtnStyle}>Delete</button>
+              </div>
             </Card>
           ) : (
             <Card key={`incident-${ev.id}`} style={{ borderLeft: `3px solid ${sevConfig[ev.severity].color}` }}>
@@ -105,6 +150,10 @@ export default function HealthLogScreen({
               <div style={{ background: "var(--color-muted)", borderRadius: 8, padding: "10px 12px" }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Response</div>
                 <div style={{ fontSize: 14, lineHeight: 1.5 }}>{ev.response}</div>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button onClick={() => setEditingEvent(ev)} style={editBtnStyle}>Edit</button>
+                <button onClick={() => handleDelete(ev)} style={deleteBtnStyle}>Delete</button>
               </div>
             </Card>
           )

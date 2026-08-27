@@ -1,31 +1,48 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import type { Symptom } from "../../types/domain";
 import type { NewSymptomInput } from "../../hooks/useHealthEvents";
 import { caregivers } from "../../data/seed";
 import { SEVERITY_LABELS } from "../../lib/severity";
+import { TODAY } from "../../lib/date";
 
 const fieldLabelStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 } as const;
 const fieldInputStyle = { width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" } as const;
 
 export default function SymptomForm({
+  symptom,
   onSubmit,
+  onSave,
   onCancel,
 }: {
-  onSubmit: (input: NewSymptomInput) => void;
+  symptom?: Symptom;
+  onSubmit?: (input: NewSymptomInput) => void;
+  onSave?: (id: string, input: NewSymptomInput) => void;
   onCancel: () => void;
 }) {
-  const [form, setForm] = useState({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh" });
+  const isEdit = !!symptom;
+  const [form, setForm] = useState(() =>
+    symptom
+      ? { symptom: symptom.symptom, severity: String(symptom.severity), notes: symptom.notes, category: symptom.category, loggedBy: symptom.loggedBy, date: symptom.date }
+      : { symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh", date: TODAY }
+  );
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit({
+    const input: NewSymptomInput = {
       symptom: form.symptom,
       severity: parseInt(form.severity) as 1 | 2 | 3 | 4 | 5,
       notes: form.notes,
       category: form.category,
       loggedBy: form.loggedBy,
-    });
-    setForm({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh" });
+      date: form.date,
+    };
+    if (isEdit && symptom) {
+      onSave?.(symptom.id, input);
+    } else {
+      onSubmit?.(input);
+      setForm({ symptom: "", severity: "2", notes: "", category: "Motor", loggedBy: "Margaret Marsh", date: TODAY });
+    }
   }
 
   return (
@@ -33,6 +50,10 @@ export default function SymptomForm({
       <div>
         <label style={fieldLabelStyle}>What happened?</label>
         <input value={form.symptom} onChange={(e) => setForm((p) => ({ ...p, symptom: e.target.value }))} required placeholder="e.g. Tremor worse, glucose elevated..." style={fieldInputStyle} />
+      </div>
+      <div>
+        <label style={fieldLabelStyle}>Date</label>
+        <input type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} required style={fieldInputStyle} />
       </div>
       <div>
         <label style={fieldLabelStyle}>

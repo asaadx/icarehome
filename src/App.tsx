@@ -20,7 +20,7 @@ export default function App() {
   const { log, addLogEntry } = useCareLog();
   const { medications, toggleDose, addMedication, updateMedication, deleteMedication } = useMedications(addLogEntry);
   const { appointments, savePrepNotes, saveOutcomeNotes, addAppointment } = useAppointments(addLogEntry);
-  const { symptoms, incidents, addSymptom, addIncident } = useHealthEvents(addLogEntry);
+  const { symptoms, incidents, addSymptom, addIncident, updateSymptom, deleteSymptom, updateIncident, deleteIncident } = useHealthEvents(addLogEntry);
   const [showMore, setShowMore] = useState(false);
   const [autoOpenKind, setAutoOpenKind] = useState<"symptom" | "incident" | null>(null);
 
@@ -66,6 +66,10 @@ export default function App() {
             incidents={incidents}
             onAddSymptom={addSymptom}
             onAddIncident={addIncident}
+            onUpdateSymptom={updateSymptom}
+            onDeleteSymptom={deleteSymptom}
+            onUpdateIncident={updateIncident}
+            onDeleteIncident={deleteIncident}
             autoOpenKind={autoOpenKind}
             onAutoOpenHandled={() => setAutoOpenKind(null)}
           />
