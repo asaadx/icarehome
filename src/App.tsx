@@ -1010,16 +1010,89 @@ function Symptoms({ symptoms, setSymptoms }: { symptoms: Symptom[]; setSymptoms:
   );
 }
 
-function Incidents({ incidents }: { incidents: Incident[] }) {
+function Incidents({ incidents, setIncidents }: { incidents: Incident[]; setIncidents: React.Dispatch<React.SetStateAction<Incident[]>> }) {
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ type: "", severity: "minor" as Incident["severity"], description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
+
   const sevConfig: Record<string, { color: string; bg: string }> = {
     minor: { color: "var(--color-muted-foreground)", bg: "var(--color-muted)" },
     moderate: { color: "var(--color-warning)", bg: "var(--color-warning-bg)" },
     serious: { color: "var(--color-danger)", bg: "var(--color-danger-bg)" },
   };
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const now = new Date();
+    setIncidents((prev) => [{
+      id: `i${Date.now()}`,
+      date: "2026-08-26",
+      time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      type: form.type,
+      severity: form.severity,
+      description: form.description,
+      response: form.response,
+      doctorNotified: form.doctorNotified,
+      loggedBy: form.loggedBy,
+    }, ...prev]);
+    setShowForm(false);
+    setForm({ type: "", severity: "minor", description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
+  }
+
   return (
     <div>
-      <PageHeader title="Incidents" subtitle="Falls, acute events, and medication errors" />
+      <PageHeader
+        title="Incidents"
+        subtitle="Falls, acute events, and medication errors"
+        action={
+          <button
+            onClick={() => setShowForm(!showForm)}
+            style={{ padding: "10px 16px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            + Log
+          </button>
+        }
+      />
+
+      {showForm && (
+        <Card style={{ marginBottom: 20, border: "1.5px solid var(--color-primary)" }}>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Incident</div>
+          <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Type</label>
+              <input value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))} required placeholder="e.g. Fall, Medication error..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Severity</label>
+              <select value={form.severity} onChange={(e) => setForm((p) => ({ ...p, severity: e.target.value as Incident["severity"] }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
+                {(["minor", "moderate", "serious"] as const).map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>What happened?</label>
+              <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} required rows={3} placeholder="Description of the event..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Response</label>
+              <textarea value={form.response} onChange={(e) => setForm((p) => ({ ...p, response: e.target.value }))} required rows={3} placeholder="What was done in response..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
+            </div>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--color-foreground)", cursor: "pointer" }}>
+              <input type="checkbox" checked={form.doctorNotified} onChange={(e) => setForm((p) => ({ ...p, doctorNotified: e.target.checked }))} style={{ width: 18, height: 18, accentColor: "var(--color-primary)", cursor: "pointer" }} />
+              Doctor notified
+            </label>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Logged by</label>
+              <select value={form.loggedBy} onChange={(e) => setForm((p) => ({ ...p, loggedBy: e.target.value }))} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }}>
+                {caregivers.map((c) => <option key={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="submit" style={{ flex: 1, padding: "13px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+              <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: "13px", background: "var(--color-muted)", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", color: "var(--color-muted-foreground)", fontFamily: "inherit" }}>Cancel</button>
+            </div>
+          </form>
+        </Card>
+      )}
+
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {incidents.map((inc) => {
           const sev = sevConfig[inc.severity];
@@ -1102,6 +1175,7 @@ export default function App() {
   const [medications, setMedications] = useState(initialMedications);
   const [appointments, setAppointments] = useState(initialAppointments);
   const [symptoms, setSymptoms] = useState(initialSymptoms);
+  const [incidents, setIncidents] = useState(initialIncidents);
   const [showMore, setShowMore] = useState(false);
 
   const isMoreScreen = MORE_ITEMS.some((m) => m.id === screen);
@@ -1117,7 +1191,7 @@ export default function App() {
         {screen === "caregivers" && <Caregivers />}
         {screen === "routines" && <Routines />}
         {screen === "symptoms" && <Symptoms symptoms={symptoms} setSymptoms={setSymptoms} />}
-        {screen === "incidents" && <Incidents incidents={initialIncidents} />}
+        {screen === "incidents" && <Incidents incidents={incidents} setIncidents={setIncidents} />}
       </div>
 
       {/* More menu overlay */}
