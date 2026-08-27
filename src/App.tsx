@@ -393,7 +393,7 @@ function Dashboard({ medications, symptoms, log }: { medications: Medication[]; 
             <div style={{ fontSize: 15, fontWeight: 600 }}>Today's medications</div>
             <div style={{ fontSize: 13, color: "var(--color-muted-foreground)", marginTop: 2 }}>
               {given} of {allDoses.length} doses given
-              {pending > 0 && <span style={{ color: "var(--color-warning)", fontWeight: 500 }}> · {pending} pending</span>}
+              {pending > 0 && <span style={{ color: "var(--color-warning)", fontWeight: 500 }}> · {pending} left</span>}
             </div>
           </div>
           <div style={{ fontSize: 22, fontWeight: 700, color: pct === 100 ? "var(--color-success)" : "var(--color-foreground)" }}>{pct}%</div>
@@ -558,7 +558,7 @@ function Medications({ medications, setMedications }: { medications: Medication[
 
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <span style={{ fontSize: 14, color: "var(--color-muted-foreground)" }}>Today's adherence</span>
+          <span style={{ fontSize: 14, color: "var(--color-muted-foreground)" }}>Today's progress</span>
           <span style={{ fontSize: 20, fontWeight: 700, color: pct === 100 ? "var(--color-success)" : "var(--color-foreground)" }}>{pct}%</span>
         </div>
         <div style={{ height: 8, background: "var(--color-muted)", borderRadius: 4, overflow: "hidden" }}>
@@ -736,7 +736,7 @@ function AppointmentCard({
         <div style={{ paddingTop: 14, borderTop: "1px solid var(--color-border)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              What happened / results
+              Results
             </span>
             {!editingOutcome && (
               <button
