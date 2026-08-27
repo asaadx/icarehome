@@ -359,6 +359,24 @@ function CheckCircle({ checked, onChange }: { checked: boolean; onChange: () => 
   );
 }
 
+function Fab({ onClick, color, label, icon }: { onClick: () => void; color: string; label: string; icon: React.ReactNode }) {
+  return (
+    <div style={{ position: "fixed", bottom: 76, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, pointerEvents: "none", zIndex: 35 }}>
+      <button
+        onClick={onClick}
+        aria-label={label}
+        style={{
+          position: "absolute", right: 16, bottom: 16, pointerEvents: "auto",
+          width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+          background: color, border: "none", boxShadow: "0 4px 14px rgba(0,0,0,0.28)", cursor: "pointer",
+        }}
+      >
+        {icon}
+      </button>
+    </div>
+  );
+}
+
 const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   medication: { label: "Medication", color: "#1A6EBF", bg: "#EFF5FE" },
   symptom: { label: "Symptom", color: "#9A5700", bg: "#FEF3E2" },
@@ -485,7 +503,7 @@ function CareLog({ log }: { log: LogEntry[] }) {
 
   return (
     <div>
-      <PageHeader title="Care Log" subtitle="Shared record — everything that happens" />
+      <PageHeader title="Care Log" subtitle="Shared record of everything that happens" />
 
       {/* Filter chips */}
       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 20, scrollbarWidth: "none" }}>
@@ -785,6 +803,9 @@ function Appointments({
   appointments: Appointment[];
   setAppointments: React.Dispatch<React.SetStateAction<Appointment[]>>;
 }) {
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ provider: "", specialty: "", location: "", date: "", time: "", prepNotes: "" });
+
   const upcoming = appointments.filter((a) => a.status === "upcoming").sort((a, b) => a.date.localeCompare(b.date));
   const past = appointments.filter((a) => a.status !== "upcoming").sort((a, b) => b.date.localeCompare(a.date));
 
@@ -796,10 +817,64 @@ function Appointments({
     setAppointments((prev) => prev.map((a) => a.id === id ? { ...a, outcomeNotes: text } : a));
   }
 
+  function submitAppointment(e: React.FormEvent) {
+    e.preventDefault();
+    setAppointments((prev) => [...prev, {
+      id: `a${Date.now()}`,
+      date: form.date,
+      time: form.time,
+      provider: form.provider,
+      specialty: form.specialty,
+      location: form.location,
+      prepNotes: form.prepNotes,
+      outcomeNotes: "",
+      status: "upcoming",
+    }]);
+    setShowForm(false);
+    setForm({ provider: "", specialty: "", location: "", date: "", time: "", prepNotes: "" });
+  }
+
   return (
     <div>
       <PageHeader title="Appointments" />
 
+      {showForm && (
+        <Card style={{ marginBottom: 20, border: "1.5px solid var(--color-primary)" }}>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Appointment</div>
+          <form onSubmit={submitAppointment} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Provider</label>
+              <input value={form.provider} onChange={(e) => setForm((p) => ({ ...p, provider: e.target.value }))} required placeholder="e.g. Dr. Anita Rosen" style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Specialty</label>
+              <input value={form.specialty} onChange={(e) => setForm((p) => ({ ...p, specialty: e.target.value }))} required placeholder="e.g. Neurology" style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Location</label>
+              <input value={form.location} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} required placeholder="e.g. Mass General Hospital" style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Date</label>
+                <input type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} required style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Time</label>
+                <input value={form.time} onChange={(e) => setForm((p) => ({ ...p, time: e.target.value }))} required placeholder="e.g. 10:30 AM" style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" }} />
+              </div>
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 }}>Prep notes (optional)</label>
+              <textarea value={form.prepNotes} onChange={(e) => setForm((p) => ({ ...p, prepNotes: e.target.value }))} rows={3} placeholder="What to bring, what to ask..." style={{ width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 15, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", resize: "vertical", outline: "none", lineHeight: 1.5 }} />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="submit" style={{ flex: 1, padding: "13px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
+              <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: "13px", background: "var(--color-muted)", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", color: "var(--color-muted-foreground)", fontFamily: "inherit" }}>Cancel</button>
+            </div>
+          </form>
+        </Card>
+      )}
       <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Upcoming</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 32 }}>
         {upcoming.map((appt) => (
@@ -813,6 +888,17 @@ function Appointments({
           <AppointmentCard key={appt.id} appt={appt} onSavePrepNotes={savePrepNotes} onSaveOutcomeNotes={saveOutcomeNotes} />
         ))}
       </div>
+
+      <Fab
+        onClick={() => setShowForm(true)}
+        color="var(--color-primary)"
+        label="Add appointment"
+        icon={
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        }
+      />
     </div>
   );
 }
@@ -1001,16 +1087,8 @@ function HealthLog({
   return (
     <div>
       <PageHeader
-        title="Health Log"
+        title="Health"
         subtitle="Symptoms, illness changes, and one-off incidents"
-        action={
-          <button
-            onClick={() => setShowForm(!showForm)}
-            style={{ padding: "10px 16px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
-          >
-            + Log
-          </button>
-        }
       />
 
       {showForm && (
@@ -1093,7 +1171,6 @@ function HealthLog({
         </Card>
       )}
 
-
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {events.map((ev) =>
           ev.kind === "symptom" ? (
@@ -1125,6 +1202,17 @@ function HealthLog({
           )
         )}
       </div>
+
+      <Fab
+        onClick={() => setShowForm(!showForm)}
+        color="var(--color-primary)"
+        label="Log a symptom or incident"
+        icon={
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        }
+      />
     </div>
   );
 }
@@ -1219,21 +1307,16 @@ export default function App() {
 
       {/* Report incident — round FAB, always reachable without scrolling or navigating */}
       {screen === "dashboard" && (
-        <div style={{ position: "fixed", bottom: 76, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, pointerEvents: "none", zIndex: 35 }}>
-          <button
-            onClick={reportIncident}
-            aria-label="Report an incident"
-            style={{
-              position: "absolute", right: 16, bottom: 16, pointerEvents: "auto",
-              width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-              background: "var(--color-danger)", border: "none", boxShadow: "0 4px 14px rgba(0,0,0,0.28)", cursor: "pointer",
-            }}
-          >
+        <Fab
+          onClick={reportIncident}
+          color="var(--color-danger)"
+          label="Report an incident"
+          icon={
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-          </button>
-        </div>
+          }
+        />
       )}
 
       {/* More menu overlay */}
