@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Appointment } from "../types/domain";
+import type { Appointment, LogEntry } from "../types/domain";
 import { initialAppointments } from "../data/seed";
 
 export interface NewAppointmentInput {
@@ -11,15 +11,23 @@ export interface NewAppointmentInput {
   prepNotes: string;
 }
 
-export function useAppointments() {
+export function useAppointments(addLogEntry: (entry: Omit<LogEntry, "id" | "date" | "time">) => void) {
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
 
   function savePrepNotes(id: string, text: string) {
+    const appt = appointments.find((a) => a.id === id);
     setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, prepNotes: text } : a)));
+    if (appt) {
+      addLogEntry({ type: "appointment", title: `Updated appointment notes: ${appt.provider}`, detail: "Prep notes updated.", loggedBy: "You" });
+    }
   }
 
   function saveOutcomeNotes(id: string, text: string) {
+    const appt = appointments.find((a) => a.id === id);
     setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, outcomeNotes: text } : a)));
+    if (appt) {
+      addLogEntry({ type: "appointment", title: `Updated appointment notes: ${appt.provider}`, detail: "Outcome notes updated.", loggedBy: "You" });
+    }
   }
 
   function addAppointment(input: NewAppointmentInput) {
@@ -37,6 +45,7 @@ export function useAppointments() {
         status: "upcoming",
       },
     ]);
+    addLogEntry({ type: "appointment", title: `Appointment scheduled: ${input.provider}`, detail: `${input.specialty} \u00b7 ${input.date} ${input.time}`, loggedBy: "You" });
   }
 
   return { appointments, savePrepNotes, saveOutcomeNotes, addAppointment };

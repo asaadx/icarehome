@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Screen } from "./types/domain";
-import { initialLog } from "./data/seed";
+import { useCareLog } from "./hooks/useCareLog";
 import { useMedications } from "./hooks/useMedications";
 import { useAppointments } from "./hooks/useAppointments";
 import { useHealthEvents } from "./hooks/useHealthEvents";
@@ -17,9 +17,10 @@ import HealthLogScreen from "./components/health/HealthLogScreen";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
-  const { medications, toggleDose } = useMedications();
-  const { appointments, savePrepNotes, saveOutcomeNotes, addAppointment } = useAppointments();
-  const { symptoms, incidents, addSymptom, addIncident } = useHealthEvents();
+  const { log, addLogEntry } = useCareLog();
+  const { medications, toggleDose, addMedication, updateMedication, deleteMedication } = useMedications(addLogEntry);
+  const { appointments, savePrepNotes, saveOutcomeNotes, addAppointment } = useAppointments(addLogEntry);
+  const { symptoms, incidents, addSymptom, addIncident } = useHealthEvents(addLogEntry);
   const [showMore, setShowMore] = useState(false);
   const [autoOpenKind, setAutoOpenKind] = useState<"symptom" | "incident" | null>(null);
 
@@ -38,9 +39,17 @@ export default function App() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", maxWidth: 480, margin: "0 auto", background: "var(--color-background)", position: "relative" }}>
       {/* Content area */}
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px 100px" }}>
-        {screen === "dashboard" && <DashboardScreen medications={medications} symptoms={symptoms} log={initialLog} />}
-        {screen === "log" && <CareLogScreen log={initialLog} />}
-        {screen === "medications" && <MedicationsScreen medications={medications} onToggleDose={toggleDose} />}
+        {screen === "dashboard" && <DashboardScreen medications={medications} symptoms={symptoms} log={log} />}
+        {screen === "log" && <CareLogScreen log={log} />}
+        {screen === "medications" && (
+          <MedicationsScreen
+            medications={medications}
+            onToggleDose={toggleDose}
+            onAddMedication={addMedication}
+            onUpdateMedication={updateMedication}
+            onDeleteMedication={deleteMedication}
+          />
+        )}
         {screen === "appointments" && (
           <AppointmentsScreen
             appointments={appointments}

@@ -1,12 +1,14 @@
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+export const TODAY = "2026-08-26";
+
 export function formatDate(dateStr: string) {
   const d = new Date(dateStr + "T12:00:00");
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export function daysUntil(dateStr: string) {
-  const today = new Date("2026-08-26T00:00:00");
+  const today = new Date(`${TODAY}T00:00:00`);
   const target = new Date(dateStr + "T00:00:00");
   return Math.ceil((target.getTime() - today.getTime()) / 86400000);
 }
