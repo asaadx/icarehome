@@ -1093,6 +1093,7 @@ function HealthLog({
         </Card>
       )}
 
+
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {events.map((ev) =>
           ev.kind === "symptom" ? (
