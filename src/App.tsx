@@ -370,7 +370,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> 
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
 
-function Dashboard({ medications, symptoms, log, onReportIncident }: { medications: Medication[]; symptoms: Symptom[]; log: LogEntry[]; onReportIncident: () => void }) {
+function Dashboard({ medications, symptoms, log }: { medications: Medication[]; symptoms: Symptom[]; log: LogEntry[] }) {
   const allDoses = medications.flatMap((m) => m.todayDoses);
   const given = allDoses.filter((d) => d.given).length;
   const pending = allDoses.length - given;
@@ -385,21 +385,6 @@ function Dashboard({ medications, symptoms, log, onReportIncident }: { medicatio
         <div style={{ fontSize: 13, opacity: 0.85 }}>Age {PATIENT.age} · {PATIENT.conditions[0]}</div>
         <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{PATIENT.conditions[1]}</div>
       </Card>
-
-      {/* Report incident — always visible, no navigation required */}
-      <button
-        onClick={onReportIncident}
-        style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          width: "100%", padding: "14px", background: "var(--color-danger-bg)", border: "1.5px solid var(--color-danger)",
-          borderRadius: 12, cursor: "pointer", fontFamily: "inherit", minHeight: 44,
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-        <span style={{ fontSize: 15, fontWeight: 700, color: "var(--color-danger)" }}>Report an Incident</span>
-      </button>
 
       {/* Medication progress */}
       <Card>
@@ -1218,7 +1203,7 @@ export default function App() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", maxWidth: 480, margin: "0 auto", background: "var(--color-background)", position: "relative" }}>
       {/* Content area */}
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px 100px" }}>
-        {screen === "dashboard" && <Dashboard medications={medications} symptoms={symptoms} log={initialLog} onReportIncident={reportIncident} />}
+        {screen === "dashboard" && <Dashboard medications={medications} symptoms={symptoms} log={initialLog} />}
         {screen === "log" && <CareLog log={initialLog} />}
         {screen === "medications" && <Medications medications={medications} setMedications={setMedications} />}
         {screen === "appointments" && <Appointments appointments={appointments} setAppointments={setAppointments} />}
@@ -1232,6 +1217,25 @@ export default function App() {
           />
         )}
       </div>
+
+      {/* Report incident — round FAB, always reachable without scrolling or navigating */}
+      {screen === "dashboard" && (
+        <div style={{ position: "fixed", bottom: 76, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, pointerEvents: "none", zIndex: 35 }}>
+          <button
+            onClick={reportIncident}
+            aria-label="Report an incident"
+            style={{
+              position: "absolute", right: 16, bottom: 16, pointerEvents: "auto",
+              width: 56, height: 56, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+              background: "var(--color-danger)", border: "none", boxShadow: "0 4px 14px rgba(0,0,0,0.28)", cursor: "pointer",
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* More menu overlay */}
       {showMore && (
