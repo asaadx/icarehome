@@ -45,14 +45,59 @@ const cancelBtnStyle: CSSProperties = {
   minHeight: 44,
 };
 
+const editBtnStyle: CSSProperties = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "var(--color-primary)",
+  background: "var(--color-secondary)",
+  border: "none",
+  cursor: "pointer",
+  padding: "7px 14px",
+  borderRadius: 20,
+  fontFamily: "inherit",
+  minHeight: 34,
+};
+
+const completeApptBtnStyle: CSSProperties = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "var(--color-success)",
+  background: "var(--color-success-bg)",
+  border: "none",
+  cursor: "pointer",
+  padding: "7px 14px",
+  borderRadius: 20,
+  fontFamily: "inherit",
+  minHeight: 34,
+};
+
+const cancelApptBtnStyle: CSSProperties = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "var(--color-danger)",
+  background: "var(--color-danger-bg)",
+  border: "none",
+  cursor: "pointer",
+  padding: "7px 14px",
+  borderRadius: 20,
+  fontFamily: "inherit",
+  minHeight: 34,
+};
+
 export default function AppointmentCard({
   appt,
   onSavePrepNotes,
   onSaveOutcomeNotes,
+  onEdit,
+  onComplete,
+  onCancelAppt,
 }: {
   appt: Appointment;
   onSavePrepNotes: (id: string, text: string) => void;
   onSaveOutcomeNotes: (id: string, text: string) => void;
+  onEdit: (id: string) => void;
+  onComplete: (id: string) => void;
+  onCancelAppt: (id: string) => void;
 }) {
   const days = daysUntil(appt.date);
   const isPast = appt.status === "completed" || appt.status === "cancelled";
@@ -66,9 +111,12 @@ export default function AppointmentCard({
     <Card style={{ borderLeft: `3px solid ${isPast ? "var(--color-border)" : "var(--color-primary)"}` }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 600 }}>{appt.provider}</div>
-          <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{appt.specialty}</div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 600 }}>{appt.provider}</div>
+            <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{appt.specialty}</div>
+          </div>
+          <button onClick={() => onEdit(appt.id)} style={editBtnStyle}>Edit</button>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: !isPast && days <= 7 ? "var(--color-danger)" : "var(--color-foreground)" }}>
@@ -86,6 +134,13 @@ export default function AppointmentCard({
         }
         <span style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{appt.location}</span>
       </div>
+
+      {!isPast && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <button onClick={() => onComplete(appt.id)} style={completeApptBtnStyle}>Mark completed</button>
+          <button onClick={() => onCancelAppt(appt.id)} style={cancelApptBtnStyle}>Cancel</button>
+        </div>
+      )}
 
       {/* Prep / questions section */}
       <div style={{ marginBottom: isPast ? 14 : 0 }}>

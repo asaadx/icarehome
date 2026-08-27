@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Appointment } from "../../types/domain";
-import type { NewAppointmentInput } from "../../hooks/useAppointments";
+import type { NewAppointmentInput, AppointmentEditInput } from "../../hooks/useAppointments";
 import PageHeader from "../ui/PageHeader";
 import Fab from "../ui/Fab";
 import AppointmentCard from "./AppointmentCard";
@@ -11,13 +11,20 @@ export default function AppointmentsScreen({
   onSavePrepNotes,
   onSaveOutcomeNotes,
   onAddAppointment,
+  onUpdateAppointment,
+  onCompleteAppointment,
+  onCancelAppointment,
 }: {
   appointments: Appointment[];
   onSavePrepNotes: (id: string, text: string) => void;
   onSaveOutcomeNotes: (id: string, text: string) => void;
   onAddAppointment: (input: NewAppointmentInput) => void;
+  onUpdateAppointment: (id: string, input: AppointmentEditInput) => void;
+  onCompleteAppointment: (id: string) => void;
+  onCancelAppointment: (id: string) => void;
 }) {
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const upcoming = appointments.filter((a) => a.status === "upcoming").sort((a, b) => a.date.localeCompare(b.date));
   const past = appointments.filter((a) => a.status !== "upcoming").sort((a, b) => b.date.localeCompare(a.date));
@@ -27,24 +34,42 @@ export default function AppointmentsScreen({
     setShowForm(false);
   }
 
+  function handleSave(id: string, input: AppointmentEditInput) {
+    onUpdateAppointment(id, input);
+    setEditingId(null);
+  }
+
+  function renderCard(appt: Appointment) {
+    if (editingId === appt.id) {
+      return <AppointmentForm key={appt.id} appointment={appt} onSave={handleSave} onCancel={() => setEditingId(null)} />;
+    }
+    return (
+      <AppointmentCard
+        key={appt.id}
+        appt={appt}
+        onSavePrepNotes={onSavePrepNotes}
+        onSaveOutcomeNotes={onSaveOutcomeNotes}
+        onEdit={setEditingId}
+        onComplete={onCompleteAppointment}
+        onCancelAppt={onCancelAppointment}
+      />
+    );
+  }
+
   return (
     <div>
       <PageHeader title="Appointments" />
 
-      {showForm && <AppointmentForm onSubmit={handleSubmit} onCancel={() => setShowForm(false)} />}
+      {showForm && <AppointmentForm onAdd={handleSubmit} onCancel={() => setShowForm(false)} />}
 
       <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Upcoming</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 32 }}>
-        {upcoming.map((appt) => (
-          <AppointmentCard key={appt.id} appt={appt} onSavePrepNotes={onSavePrepNotes} onSaveOutcomeNotes={onSaveOutcomeNotes} />
-        ))}
+        {upcoming.map(renderCard)}
       </div>
 
       <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Past</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {past.map((appt) => (
-          <AppointmentCard key={appt.id} appt={appt} onSavePrepNotes={onSavePrepNotes} onSaveOutcomeNotes={onSaveOutcomeNotes} />
-        ))}
+        {past.map(renderCard)}
       </div>
 
       <Fab

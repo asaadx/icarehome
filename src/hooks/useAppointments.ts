@@ -11,6 +11,14 @@ export interface NewAppointmentInput {
   prepNotes: string;
 }
 
+export interface AppointmentEditInput {
+  provider: string;
+  specialty: string;
+  location: string;
+  date: string;
+  time: string;
+}
+
 export function useAppointments(addLogEntry: (entry: Omit<LogEntry, "id" | "date" | "time">) => void) {
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
 
@@ -48,5 +56,26 @@ export function useAppointments(addLogEntry: (entry: Omit<LogEntry, "id" | "date
     addLogEntry({ type: "appointment", title: `Appointment scheduled: ${input.provider}`, detail: `${input.specialty} \u00b7 ${input.date} ${input.time}`, loggedBy: "You" });
   }
 
-  return { appointments, savePrepNotes, saveOutcomeNotes, addAppointment };
+  function updateAppointment(id: string, input: AppointmentEditInput) {
+    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, ...input } : a)));
+    addLogEntry({ type: "appointment", title: `Updated appointment: ${input.provider}`, detail: "Appointment details edited.", loggedBy: "You" });
+  }
+
+  function cancelAppointment(id: string) {
+    const appt = appointments.find((a) => a.id === id);
+    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: "cancelled" } : a)));
+    if (appt) {
+      addLogEntry({ type: "appointment", title: `Appointment cancelled: ${appt.provider}`, detail: `${appt.specialty} \u00b7 was ${appt.date}`, loggedBy: "You" });
+    }
+  }
+
+  function completeAppointment(id: string) {
+    const appt = appointments.find((a) => a.id === id);
+    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status: "completed" } : a)));
+    if (appt) {
+      addLogEntry({ type: "appointment", title: `Appointment completed: ${appt.provider}`, detail: appt.specialty, loggedBy: "You" });
+    }
+  }
+
+  return { appointments, savePrepNotes, saveOutcomeNotes, addAppointment, updateAppointment, cancelAppointment, completeAppointment };
 }
