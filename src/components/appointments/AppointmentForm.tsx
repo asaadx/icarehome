@@ -1,29 +1,48 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import type { NewAppointmentInput } from "../../hooks/useAppointments";
+import type { Appointment } from "../../types/domain";
+import type { NewAppointmentInput, AppointmentEditInput } from "../../hooks/useAppointments";
 import Card from "../ui/Card";
 
 const fieldLabelStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 } as const;
 const fieldInputStyle = { width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" } as const;
+const fieldTextareaStyle = { ...fieldInputStyle, resize: "vertical", lineHeight: 1.5, fontSize: 15 } as const;
+
+const emptyForm = { provider: "", specialty: "", location: "", date: "", time: "", prepNotes: "", outcomeNotes: "" };
 
 export default function AppointmentForm({
-  onSubmit,
+  appointment,
+  onAdd,
+  onSave,
   onCancel,
 }: {
-  onSubmit: (input: NewAppointmentInput) => void;
+  appointment?: Appointment;
+  onAdd?: (input: NewAppointmentInput) => void;
+  onSave?: (id: string, input: AppointmentEditInput) => void;
   onCancel: () => void;
 }) {
-  const [form, setForm] = useState<NewAppointmentInput>({ provider: "", specialty: "", location: "", date: "", time: "", prepNotes: "" });
+  const isEdit = !!appointment;
+  const isPast = appointment?.status === "completed" || appointment?.status === "cancelled";
+  const [form, setForm] = useState(() =>
+    appointment
+      ? { provider: appointment.provider, specialty: appointment.specialty, location: appointment.location, date: appointment.date, time: appointment.time, prepNotes: appointment.prepNotes, outcomeNotes: appointment.outcomeNotes }
+      : emptyForm
+  );
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit(form);
-    setForm({ provider: "", specialty: "", location: "", date: "", time: "", prepNotes: "" });
+    const { provider, specialty, location, date, time, prepNotes, outcomeNotes } = form;
+    if (isEdit && appointment) {
+      onSave?.(appointment.id, { provider, specialty, location, date, time, prepNotes, outcomeNotes });
+    } else {
+      onAdd?.({ provider, specialty, location, date, time, prepNotes });
+      setForm(emptyForm);
+    }
   }
 
   return (
     <Card style={{ marginBottom: 20, border: "1.5px solid var(--color-primary)" }}>
-      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>New Appointment</div>
+      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>{isEdit ? "Edit Appointment" : "New Appointment"}</div>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <div>
           <label style={fieldLabelStyle}>Provider</label>
@@ -48,9 +67,15 @@ export default function AppointmentForm({
           </div>
         </div>
         <div>
-          <label style={fieldLabelStyle}>Prep notes (optional)</label>
-          <textarea value={form.prepNotes} onChange={(e) => setForm((p) => ({ ...p, prepNotes: e.target.value }))} rows={3} placeholder="What to bring, what to ask..." style={{ ...fieldInputStyle, resize: "vertical", lineHeight: 1.5, fontSize: 15 }} />
+          <label style={fieldLabelStyle}>{isPast ? "Questions we brought (optional)" : "Questions to bring (optional)"}</label>
+          <textarea value={form.prepNotes} onChange={(e) => setForm((p) => ({ ...p, prepNotes: e.target.value }))} rows={3} placeholder="What to bring, what to ask..." style={fieldTextareaStyle} />
         </div>
+        {isPast && (
+          <div>
+            <label style={fieldLabelStyle}>Results (optional)</label>
+            <textarea value={form.outcomeNotes} onChange={(e) => setForm((p) => ({ ...p, outcomeNotes: e.target.value }))} rows={4} placeholder="What did the doctor say? Any changes to medications, referrals, follow-ups, or advice?" style={fieldTextareaStyle} />
+          </div>
+        )}
         <div style={{ display: "flex", gap: 10 }}>
           <button type="submit" style={{ flex: 1, padding: "13px", background: "var(--color-primary)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Save</button>
           <button type="button" onClick={onCancel} style={{ flex: 1, padding: "13px", background: "var(--color-muted)", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: "pointer", color: "var(--color-muted-foreground)", fontFamily: "inherit" }}>Cancel</button>
