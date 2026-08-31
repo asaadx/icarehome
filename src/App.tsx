@@ -21,6 +21,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const { log, addLogEntry } = useCareLog();
   const { medications, toggleDose, addMedication, updateMedication, deleteMedication } = useMedications(addLogEntry);
+  const { symptoms, incidents, addSymptom, addIncident, updateSymptom, deleteSymptom, updateIncident, deleteIncident } = useHealthEvents(addLogEntry);
   const { routines, addRoutine, updateRoutine, deleteRoutine, toggleRoutineDone, moveRoutine } = useRoutines(addLogEntry);
   const { caregivers, addCaregiver, updateCaregiver, deleteCaregiver } = useCaregivers(addLogEntry);
   const { appointments, addAppointment, updateAppointment, cancelAppointment, completeAppointment } = useAppointments(addLogEntry);
@@ -88,6 +89,10 @@ export default function App() {
             incidents={incidents}
             onAddSymptom={addSymptom}
             onAddIncident={addIncident}
+            onUpdateSymptom={updateSymptom}
+            onDeleteSymptom={deleteSymptom}
+            onUpdateIncident={updateIncident}
+            onDeleteIncident={deleteIncident}
             autoOpenKind={autoOpenKind}
             onAutoOpenHandled={() => setAutoOpenKind(null)}
           />

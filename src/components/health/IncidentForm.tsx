@@ -3,23 +3,39 @@ import type { FormEvent } from "react";
 import type { Incident } from "../../types/domain";
 import type { NewIncidentInput } from "../../hooks/useHealthEvents";
 import { caregivers } from "../../data/seed";
+import { TODAY } from "../../lib/date";
 
 const fieldLabelStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 } as const;
 const fieldInputStyle = { width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" } as const;
 
+const emptyForm: NewIncidentInput = { type: "", severity: "minor", description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh", date: TODAY };
+
 export default function IncidentForm({
+  incident,
   onSubmit,
+  onSave,
   onCancel,
 }: {
-  onSubmit: (input: NewIncidentInput) => void;
+  incident?: Incident;
+  onSubmit?: (input: NewIncidentInput) => void;
+  onSave?: (id: string, input: NewIncidentInput) => void;
   onCancel: () => void;
 }) {
-  const [form, setForm] = useState<NewIncidentInput>({ type: "", severity: "minor", description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
+  const isEdit = !!incident;
+  const [form, setForm] = useState<NewIncidentInput>(() =>
+    incident
+      ? { type: incident.type, severity: incident.severity, description: incident.description, response: incident.response, doctorNotified: incident.doctorNotified, loggedBy: incident.loggedBy, date: incident.date }
+      : emptyForm
+  );
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit(form);
-    setForm({ type: "", severity: "minor", description: "", response: "", doctorNotified: false, loggedBy: "Margaret Marsh" });
+    if (isEdit && incident) {
+      onSave?.(incident.id, form);
+    } else {
+      onSubmit?.(form);
+      setForm(emptyForm);
+    }
   }
 
   return (
@@ -27,6 +43,10 @@ export default function IncidentForm({
       <div>
         <label style={fieldLabelStyle}>Type</label>
         <input value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))} required placeholder="e.g. Fall, Medication error..." style={fieldInputStyle} />
+      </div>
+      <div>
+        <label style={fieldLabelStyle}>Date</label>
+        <input type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} required style={fieldInputStyle} />
       </div>
       <div>
         <label style={fieldLabelStyle}>Severity</label>
