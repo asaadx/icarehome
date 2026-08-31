@@ -46,6 +46,6 @@ This project uses **Tailwind CSS v4** through the `@tailwindcss/vite` plugin con
 - **Branches**: cut from `main`, named `<type>/<short-kebab-description>` (e.g. `feat/incident-logging`, `fix/med-adherence-calc`). One logical change per branch.
 - **`main` is protected**: no direct commits and no force pushes to `main`. Every change lands through a pull request, including solo/self-authored work. `main` must always build and stay deployable.
 - **Force pushes**: never to `main` or any shared branch. Only rewrite history on your own not-yet-reviewed feature branch.
-- **Pull requests**: open a PR for every change. Squash-merge into `main` so each PR becomes exactly one commit, titled with a Conventional Commits message. Delete the branch after merge.
+- **Pull requests**: open a PR for every change. Merge into `main` with a merge commit (no squashing), titled with a Conventional Commits message. Never delete branches after merge — keep them around.
 - **Merge permission**: opening or updating a PR never implies merge rights. Get explicit sign-off before merging unless a specific PR's merge is pre-approved.
 - **Version bumps**: `package.json` `version` follows [semver](https://semver.org/) and is bumped in a dedicated commit on `main` at release time — not inside individual feature branches, to avoid bump conflicts across parallel PRs. Merged `fix` commits bump patch, `feat` bumps minor, any `BREAKING CHANGE` footer bumps major.
