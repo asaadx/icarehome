@@ -1,16 +1,30 @@
-import type { Medication, Symptom, LogEntry } from "../../types/domain";
+import type { Appointment, Medication, Symptom, LogEntry } from "../../types/domain";
 import { PATIENT } from "../../data/seed";
 import { TYPE_CONFIG } from "../../lib/logTypeConfig";
+import { formatDate, daysUntil } from "../../lib/date";
 import Card from "../ui/Card";
 import Pill from "../ui/Pill";
 import SeverityBar from "../ui/SeverityBar";
 
-export default function DashboardScreen({ medications, symptoms, log }: { medications: Medication[]; symptoms: Symptom[]; log: LogEntry[] }) {
+export default function DashboardScreen({
+  medications,
+  appointments,
+  symptoms,
+  log,
+}: {
+  medications: Medication[];
+  appointments: Appointment[];
+  symptoms: Symptom[];
+  log: LogEntry[];
+}) {
   const allDoses = medications.flatMap((m) => m.todayDoses);
   const given = allDoses.filter((d) => d.given).length;
   const pending = allDoses.length - given;
   const pct = Math.round((given / allDoses.length) * 100);
   const pendingMeds = medications.filter((m) => m.todayDoses.some((d) => !d.given));
+  const nextAppointment = appointments
+    .filter((a) => a.status === "upcoming")
+    .sort((a, b) => a.date.localeCompare(b.date))[0];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -57,15 +71,30 @@ export default function DashboardScreen({ medications, symptoms, log }: { medica
       {/* Next appointment */}
       <Card>
         <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Next Appointment</div>
-        <div style={{ fontSize: 16, fontWeight: 600 }}>Dr. Anita Rosen</div>
-        <div style={{ fontSize: 14, color: "var(--color-muted-foreground)" }}>Neurology · Mass General Hospital</div>
-        <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
-          <Pill label="Sep 3 · 10:30 AM" color="var(--color-primary)" bg="var(--color-secondary)" />
-          <Pill label="In 8 days" color="var(--color-warning)" bg="var(--color-warning-bg)" />
-        </div>
-        <div style={{ marginTop: 10, fontSize: 13, color: "var(--color-muted-foreground)", background: "var(--color-muted)", padding: "8px 10px", borderRadius: 8 }}>
-          Bring tremor journal. Discuss increased freezing episodes.
-        </div>
+        {nextAppointment ? (
+          <>
+            <div style={{ fontSize: 16, fontWeight: 600 }}>{nextAppointment.provider}</div>
+            <div style={{ fontSize: 14, color: "var(--color-muted-foreground)" }}>{nextAppointment.specialty} · {nextAppointment.location}</div>
+            <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <Pill label={formatDate(nextAppointment.date)} color="var(--color-primary)" bg="var(--color-secondary)" />
+              {(() => {
+                const days = daysUntil(nextAppointment.date);
+                return (
+                  <Pill
+                    label={days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`}
+                    color={days <= 7 ? "var(--color-warning)" : "var(--color-primary)"}
+                    bg={days <= 7 ? "var(--color-warning-bg)" : "var(--color-secondary)"}
+                  />
+                );
+              })()}
+            </div>
+            <div style={{ marginTop: 10, fontSize: 13, color: "var(--color-muted-foreground)", background: "var(--color-muted)", padding: "8px 10px", borderRadius: 8 }}>
+              {nextAppointment.prepNotes || "No prep notes yet."}
+            </div>
+          </>
+        ) : (
+          <div style={{ fontSize: 14, color: "var(--color-muted-foreground)" }}>No upcoming appointments</div>
+        )}
       </Card>
 
       {/* Recent observations */}
