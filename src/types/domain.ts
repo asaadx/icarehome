@@ -41,6 +41,7 @@ export interface Routine {
   category: "morning" | "afternoon" | "evening" | "night";
   notes: string;
   assignedTo: string;
+  completed: boolean;
 }
 
 export interface Symptom {

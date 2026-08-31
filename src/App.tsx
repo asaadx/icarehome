@@ -3,6 +3,8 @@ import type { Screen } from "./types/domain";
 import { useCareLog } from "./hooks/useCareLog";
 import { useMedications } from "./hooks/useMedications";
 import { useAppointments } from "./hooks/useAppointments";
+import { useRoutines } from "./hooks/useRoutines";
+import { useCaregivers } from "./hooks/useCaregivers";
 import { useHealthEvents } from "./hooks/useHealthEvents";
 import Fab from "./components/ui/Fab";
 import BottomNav from "./components/layout/BottomNav";
@@ -19,8 +21,11 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const { log, addLogEntry } = useCareLog();
   const { medications, toggleDose, addMedication, updateMedication, deleteMedication } = useMedications(addLogEntry);
-  const { appointments, savePrepNotes, saveOutcomeNotes, addAppointment } = useAppointments(addLogEntry);
   const { symptoms, incidents, addSymptom, addIncident, updateSymptom, deleteSymptom, updateIncident, deleteIncident } = useHealthEvents(addLogEntry);
+  const { routines, addRoutine, updateRoutine, deleteRoutine, toggleRoutineDone, moveRoutine } = useRoutines(addLogEntry);
+  const { caregivers, addCaregiver, updateCaregiver, deleteCaregiver } = useCaregivers(addLogEntry);
+  const { appointments, addAppointment, updateAppointment, cancelAppointment, completeAppointment } = useAppointments(addLogEntry);
+  const { symptoms, incidents, addSymptom, addIncident } = useHealthEvents(addLogEntry);
   const [showMore, setShowMore] = useState(false);
   const [autoOpenKind, setAutoOpenKind] = useState<"symptom" | "incident" | null>(null);
 
@@ -39,7 +44,7 @@ export default function App() {
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", maxWidth: 480, margin: "0 auto", background: "var(--color-background)", position: "relative" }}>
       {/* Content area */}
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 16px 100px" }}>
-        {screen === "dashboard" && <DashboardScreen medications={medications} symptoms={symptoms} log={log} />}
+        {screen === "dashboard" && <DashboardScreen medications={medications} symptoms={symptoms} log={log} appointments={appointments} />}
         {screen === "log" && <CareLogScreen log={log} />}
         {screen === "medications" && (
           <MedicationsScreen
@@ -53,13 +58,31 @@ export default function App() {
         {screen === "appointments" && (
           <AppointmentsScreen
             appointments={appointments}
-            onSavePrepNotes={savePrepNotes}
-            onSaveOutcomeNotes={saveOutcomeNotes}
             onAddAppointment={addAppointment}
+            onUpdateAppointment={updateAppointment}
+            onCompleteAppointment={completeAppointment}
+            onCancelAppointment={cancelAppointment}
+          />
+        )}
+        {screen === "caregivers" && (
+          <CaregiversScreen
+            caregivers={caregivers}
+            onAddCaregiver={addCaregiver}
+            onUpdateCaregiver={updateCaregiver}
+            onDeleteCaregiver={deleteCaregiver}
           />
         )}
         {screen === "caregivers" && <CaregiversScreen />}
-        {screen === "routines" && <RoutinesScreen />}
+        {screen === "routines" && (
+          <RoutinesScreen
+            routines={routines}
+            onAddRoutine={addRoutine}
+            onUpdateRoutine={updateRoutine}
+            onDeleteRoutine={deleteRoutine}
+            onToggleRoutineDone={toggleRoutineDone}
+            onMoveRoutine={moveRoutine}
+          />
+        )}
         {screen === "health" && (
           <HealthLogScreen
             symptoms={symptoms}
