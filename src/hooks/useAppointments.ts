@@ -17,26 +17,12 @@ export interface AppointmentEditInput {
   location: string;
   date: string;
   time: string;
+  prepNotes: string;
+  outcomeNotes: string;
 }
 
 export function useAppointments(addLogEntry: (entry: Omit<LogEntry, "id" | "date" | "time">) => void) {
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
-
-  function savePrepNotes(id: string, text: string) {
-    const appt = appointments.find((a) => a.id === id);
-    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, prepNotes: text } : a)));
-    if (appt) {
-      addLogEntry({ type: "appointment", title: `Updated appointment notes: ${appt.provider}`, detail: "Prep notes updated.", loggedBy: "You" });
-    }
-  }
-
-  function saveOutcomeNotes(id: string, text: string) {
-    const appt = appointments.find((a) => a.id === id);
-    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, outcomeNotes: text } : a)));
-    if (appt) {
-      addLogEntry({ type: "appointment", title: `Updated appointment notes: ${appt.provider}`, detail: "Outcome notes updated.", loggedBy: "You" });
-    }
-  }
 
   function addAppointment(input: NewAppointmentInput) {
     setAppointments((prev) => [
@@ -77,5 +63,5 @@ export function useAppointments(addLogEntry: (entry: Omit<LogEntry, "id" | "date
     }
   }
 
-  return { appointments, savePrepNotes, saveOutcomeNotes, addAppointment, updateAppointment, cancelAppointment, completeAppointment };
+  return { appointments, addAppointment, updateAppointment, cancelAppointment, completeAppointment };
 }

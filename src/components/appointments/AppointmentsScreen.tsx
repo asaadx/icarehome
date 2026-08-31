@@ -8,16 +8,12 @@ import AppointmentForm from "./AppointmentForm";
 
 export default function AppointmentsScreen({
   appointments,
-  onSavePrepNotes,
-  onSaveOutcomeNotes,
   onAddAppointment,
   onUpdateAppointment,
   onCompleteAppointment,
   onCancelAppointment,
 }: {
   appointments: Appointment[];
-  onSavePrepNotes: (id: string, text: string) => void;
-  onSaveOutcomeNotes: (id: string, text: string) => void;
   onAddAppointment: (input: NewAppointmentInput) => void;
   onUpdateAppointment: (id: string, input: AppointmentEditInput) => void;
   onCompleteAppointment: (id: string) => void;
@@ -47,8 +43,6 @@ export default function AppointmentsScreen({
       <AppointmentCard
         key={appt.id}
         appt={appt}
-        onSavePrepNotes={onSavePrepNotes}
-        onSaveOutcomeNotes={onSaveOutcomeNotes}
         onEdit={setEditingId}
         onComplete={onCompleteAppointment}
         onCancelAppt={onCancelAppointment}

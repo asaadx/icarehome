@@ -19,7 +19,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const { log, addLogEntry } = useCareLog();
   const { medications, toggleDose, addMedication, updateMedication, deleteMedication } = useMedications(addLogEntry);
-  const { appointments, savePrepNotes, saveOutcomeNotes, addAppointment, updateAppointment, cancelAppointment, completeAppointment } = useAppointments(addLogEntry);
+  const { appointments, addAppointment, updateAppointment, cancelAppointment, completeAppointment } = useAppointments(addLogEntry);
   const { symptoms, incidents, addSymptom, addIncident } = useHealthEvents(addLogEntry);
   const [showMore, setShowMore] = useState(false);
   const [autoOpenKind, setAutoOpenKind] = useState<"symptom" | "incident" | null>(null);
@@ -53,8 +53,6 @@ export default function App() {
         {screen === "appointments" && (
           <AppointmentsScreen
             appointments={appointments}
-            onSavePrepNotes={savePrepNotes}
-            onSaveOutcomeNotes={saveOutcomeNotes}
             onAddAppointment={addAppointment}
             onUpdateAppointment={updateAppointment}
             onCompleteAppointment={completeAppointment}

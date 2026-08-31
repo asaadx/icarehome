@@ -6,8 +6,9 @@ import Card from "../ui/Card";
 
 const fieldLabelStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", display: "block", marginBottom: 6 } as const;
 const fieldInputStyle = { width: "100%", padding: "12px 14px", border: "1.5px solid var(--color-border)", borderRadius: 10, fontSize: 16, fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-foreground)", outline: "none" } as const;
+const fieldTextareaStyle = { ...fieldInputStyle, resize: "vertical", lineHeight: 1.5, fontSize: 15 } as const;
 
-const emptyForm = { provider: "", specialty: "", location: "", date: "", time: "", prepNotes: "" };
+const emptyForm = { provider: "", specialty: "", location: "", date: "", time: "", prepNotes: "", outcomeNotes: "" };
 
 export default function AppointmentForm({
   appointment,
@@ -21,19 +22,20 @@ export default function AppointmentForm({
   onCancel: () => void;
 }) {
   const isEdit = !!appointment;
+  const isPast = appointment?.status === "completed" || appointment?.status === "cancelled";
   const [form, setForm] = useState(() =>
     appointment
-      ? { provider: appointment.provider, specialty: appointment.specialty, location: appointment.location, date: appointment.date, time: appointment.time, prepNotes: "" }
+      ? { provider: appointment.provider, specialty: appointment.specialty, location: appointment.location, date: appointment.date, time: appointment.time, prepNotes: appointment.prepNotes, outcomeNotes: appointment.outcomeNotes }
       : emptyForm
   );
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const { provider, specialty, location, date, time } = form;
+    const { provider, specialty, location, date, time, prepNotes, outcomeNotes } = form;
     if (isEdit && appointment) {
-      onSave?.(appointment.id, { provider, specialty, location, date, time });
+      onSave?.(appointment.id, { provider, specialty, location, date, time, prepNotes, outcomeNotes });
     } else {
-      onAdd?.({ provider, specialty, location, date, time, prepNotes: form.prepNotes });
+      onAdd?.({ provider, specialty, location, date, time, prepNotes });
       setForm(emptyForm);
     }
   }
@@ -64,10 +66,14 @@ export default function AppointmentForm({
             <input value={form.time} onChange={(e) => setForm((p) => ({ ...p, time: e.target.value }))} required placeholder="e.g. 10:30 AM" style={fieldInputStyle} />
           </div>
         </div>
-        {!isEdit && (
+        <div>
+          <label style={fieldLabelStyle}>{isPast ? "Questions we brought (optional)" : "Questions to bring (optional)"}</label>
+          <textarea value={form.prepNotes} onChange={(e) => setForm((p) => ({ ...p, prepNotes: e.target.value }))} rows={3} placeholder="What to bring, what to ask..." style={fieldTextareaStyle} />
+        </div>
+        {isPast && (
           <div>
-            <label style={fieldLabelStyle}>Prep notes (optional)</label>
-            <textarea value={form.prepNotes} onChange={(e) => setForm((p) => ({ ...p, prepNotes: e.target.value }))} rows={3} placeholder="What to bring, what to ask..." style={{ ...fieldInputStyle, resize: "vertical", lineHeight: 1.5, fontSize: 15 }} />
+            <label style={fieldLabelStyle}>Results (optional)</label>
+            <textarea value={form.outcomeNotes} onChange={(e) => setForm((p) => ({ ...p, outcomeNotes: e.target.value }))} rows={4} placeholder="What did the doctor say? Any changes to medications, referrals, follow-ups, or advice?" style={fieldTextareaStyle} />
           </div>
         )}
         <div style={{ display: "flex", gap: 10 }}>
