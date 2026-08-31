@@ -134,18 +134,18 @@ export const caregivers: Caregiver[] = [
 ];
 
 export const routines: Routine[] = [
-  { id: "r1", time: "7:00 AM", title: "Morning medications", category: "morning", notes: "Carbidopa-Levodopa + Lisinopril. Give on empty stomach, 30 min before breakfast.", assignedTo: "Margaret / Yolanda" },
-  { id: "r2", time: "7:30 AM", title: "Breakfast + blood sugar check", category: "morning", notes: "Target fasting glucose 100–140 mg/dL. Record reading in care log.", assignedTo: "Yolanda / Margaret" },
-  { id: "r3", time: "8:00 AM", title: "Metformin with breakfast", category: "morning", notes: "Give with food to reduce GI side effects.", assignedTo: "Yolanda / Margaret" },
-  { id: "r4", time: "9:00 AM", title: "Morning hygiene and dressing", category: "morning", notes: "Allow extra time — tremor worse before medication kicks in (~60 min). Adaptive clothing in top drawer.", assignedTo: "Yolanda" },
-  { id: "r5", time: "10:00 AM", title: "Seated exercises / stretching", category: "morning", notes: "15 min PT routine from sheet on fridge. Ankle circles and shoulder rolls.", assignedTo: "Yolanda" },
-  { id: "r6", time: "12:00 PM", title: "Lunch + noon medications", category: "afternoon", notes: "Carbidopa-Levodopa dose 2. Give 30 min before eating. Add Vitamin D3 with the meal.", assignedTo: "Yolanda" },
-  { id: "r7", time: "2:00 PM", title: "Rest period", category: "afternoon", notes: "Nap or quiet activity. Do not skip — fatigue worsens afternoon tremors.", assignedTo: "Yolanda" },
-  { id: "r8", time: "4:00 PM", title: "Afternoon walk", category: "afternoon", notes: "15–20 min with rollator on flat path. Two-person assist on bad tremor days.", assignedTo: "Yolanda / Margaret" },
-  { id: "r9", time: "5:00 PM", title: "Evening Carbidopa-Levodopa", category: "evening", notes: "Dose 3 of 3. Check her fatigue level — freezing more common when tired.", assignedTo: "Margaret / Yolanda" },
-  { id: "r10", time: "6:30 PM", title: "Dinner + Metformin", category: "evening", notes: "Soft foods preferred. No liquids without thickener.", assignedTo: "Margaret" },
-  { id: "r11", time: "8:00 PM", title: "Evening blood sugar check", category: "evening", notes: "Target post-dinner under 180 mg/dL. Record in care log.", assignedTo: "Margaret" },
-  { id: "r12", time: "9:00 PM", title: "Bedtime routine + Ropinirole", category: "night", notes: "Teeth brushing, face wash, bed transfer. Give Ropinirole at lights out.", assignedTo: "Margaret" },
+  { id: "r1", time: "7:00 AM", title: "Morning medications", category: "morning", notes: "Carbidopa-Levodopa + Lisinopril. Give on empty stomach, 30 min before breakfast.", assignedTo: "Margaret / Yolanda", completed: false },
+  { id: "r2", time: "7:30 AM", title: "Breakfast + blood sugar check", category: "morning", notes: "Target fasting glucose 100–140 mg/dL. Record reading in care log.", assignedTo: "Yolanda / Margaret", completed: false },
+  { id: "r3", time: "8:00 AM", title: "Metformin with breakfast", category: "morning", notes: "Give with food to reduce GI side effects.", assignedTo: "Yolanda / Margaret", completed: false },
+  { id: "r4", time: "9:00 AM", title: "Morning hygiene and dressing", category: "morning", notes: "Allow extra time — tremor worse before medication kicks in (~60 min). Adaptive clothing in top drawer.", assignedTo: "Yolanda", completed: false },
+  { id: "r5", time: "10:00 AM", title: "Seated exercises / stretching", category: "morning", notes: "15 min PT routine from sheet on fridge. Ankle circles and shoulder rolls.", assignedTo: "Yolanda", completed: false },
+  { id: "r6", time: "12:00 PM", title: "Lunch + noon medications", category: "afternoon", notes: "Carbidopa-Levodopa dose 2. Give 30 min before eating. Add Vitamin D3 with the meal.", assignedTo: "Yolanda", completed: false },
+  { id: "r7", time: "2:00 PM", title: "Rest period", category: "afternoon", notes: "Nap or quiet activity. Do not skip — fatigue worsens afternoon tremors.", assignedTo: "Yolanda", completed: false },
+  { id: "r8", time: "4:00 PM", title: "Afternoon walk", category: "afternoon", notes: "15–20 min with rollator on flat path. Two-person assist on bad tremor days.", assignedTo: "Yolanda / Margaret", completed: false },
+  { id: "r9", time: "5:00 PM", title: "Evening Carbidopa-Levodopa", category: "evening", notes: "Dose 3 of 3. Check her fatigue level — freezing more common when tired.", assignedTo: "Margaret / Yolanda", completed: false },
+  { id: "r10", time: "6:30 PM", title: "Dinner + Metformin", category: "evening", notes: "Soft foods preferred. No liquids without thickener.", assignedTo: "Margaret", completed: false },
+  { id: "r11", time: "8:00 PM", title: "Evening blood sugar check", category: "evening", notes: "Target post-dinner under 180 mg/dL. Record in care log.", assignedTo: "Margaret", completed: false },
+  { id: "r12", time: "9:00 PM", title: "Bedtime routine + Ropinirole", category: "night", notes: "Teeth brushing, face wash, bed transfer. Give Ropinirole at lights out.", assignedTo: "Margaret", completed: false },
 ];
 
 export const initialSymptoms: Symptom[] = [
