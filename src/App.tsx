@@ -21,11 +21,10 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const { log, addLogEntry } = useCareLog();
   const { medications, toggleDose, addMedication, updateMedication, deleteMedication } = useMedications(addLogEntry);
-  const { symptoms, incidents, addSymptom, addIncident, updateSymptom, deleteSymptom, updateIncident, deleteIncident } = useHealthEvents(addLogEntry);
   const { routines, addRoutine, updateRoutine, deleteRoutine, toggleRoutineDone, moveRoutine } = useRoutines(addLogEntry);
   const { caregivers, addCaregiver, updateCaregiver, deleteCaregiver } = useCaregivers(addLogEntry);
   const { appointments, addAppointment, updateAppointment, cancelAppointment, completeAppointment } = useAppointments(addLogEntry);
-  const { symptoms, incidents, addSymptom, addIncident } = useHealthEvents(addLogEntry);
+  const { symptoms, incidents, addSymptom, addIncident, updateSymptom, deleteSymptom, updateIncident, deleteIncident } = useHealthEvents(addLogEntry);
   const [showMore, setShowMore] = useState(false);
   const [autoOpenKind, setAutoOpenKind] = useState<"symptom" | "incident" | null>(null);
 
@@ -72,7 +71,6 @@ export default function App() {
             onDeleteCaregiver={deleteCaregiver}
           />
         )}
-        {screen === "caregivers" && <CaregiversScreen />}
         {screen === "routines" && (
           <RoutinesScreen
             routines={routines}
