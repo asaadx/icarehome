@@ -6,10 +6,9 @@ import Card from "../ui/Card";
 import Pill from "../ui/Pill";
 import CheckCircle from "../ui/CheckCircle";
 import Fab from "../ui/Fab";
+import ActionButton from "../ui/ActionButton";
+import { PencilIcon, TrashIcon } from "../ui/icons";
 import MedicationForm from "./MedicationForm";
-
-const editBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-primary)", background: "var(--color-secondary)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
-const deleteBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-danger)", background: "var(--color-danger-bg)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
 
 export default function MedicationsScreen({
   medications,
@@ -73,10 +72,13 @@ export default function MedicationsScreen({
           const allGiven = givenCount === med.todayDoses.length;
           return (
             <Card key={med.id}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                <div style={{ flex: 1, paddingRight: 10 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>{med.name}</div>
-                  <div style={{ fontSize: 14, color: "var(--color-muted-foreground)" }}>{med.dose} · {med.purpose}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6, gap: 12 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ fontSize: 16, fontWeight: 600 }}>{med.name}</div>
+                    <ActionButton icon={<PencilIcon size={13} />} label="Edit" tone="primary" mode="icon" size={24} onClick={() => setEditingId(med.id)} />
+                  </div>
+                  <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginTop: 2 }}>{med.dose} · {med.purpose}</div>
                 </div>
                 {allGiven && <Pill label="Done" color="var(--color-success)" bg="var(--color-success-bg)" />}
               </div>
@@ -101,8 +103,7 @@ export default function MedicationsScreen({
                 ))}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setEditingId(med.id)} style={editBtnStyle}>Edit</button>
-                <button onClick={() => handleDelete(med)} style={deleteBtnStyle}>Discontinue</button>
+                <ActionButton icon={<TrashIcon size={16} />} label="Discontinue" tone="danger" mode="icon-text" onClick={() => handleDelete(med)} />
               </div>
             </Card>
           );
