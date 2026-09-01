@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { Appointment, Medication, Symptom, LogEntry } from "../../types/domain";
 import { PATIENT } from "../../data/seed";
 import { TYPE_CONFIG } from "../../lib/logTypeConfig";
@@ -118,19 +119,20 @@ export default function DashboardScreen({
       {/* Recent log */}
       <div>
         <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>Recent Activity</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "max-content 1fr", columnGap: 12, alignItems: "start" }}>
           {log.slice(0, 5).map((entry, i) => {
             const tc = TYPE_CONFIG[entry.type];
             return (
-              <div key={entry.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: i < 4 ? "1px solid var(--color-border)" : "none" }}>
-                <div className="min-w-28 shrink-0" style={{ paddingTop: 2 }}>
+              <Fragment key={entry.id}>
+                <div style={{ paddingTop: 14, paddingBottom: 12 }}>
                   <Pill label={tc.label} color={tc.color} bg={tc.bg} />
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ paddingTop: 12, paddingBottom: 12 }}>
                   <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>{entry.title}</div>
                   <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{entry.time} · {entry.loggedBy}</div>
                 </div>
-              </div>
+                {i < 4 && <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid var(--color-border)" }} />}
+              </Fragment>
             );
           })}
         </div>

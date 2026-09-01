@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type { LogEntry } from "../../types/domain";
 import { TYPE_CONFIG } from "../../lib/logTypeConfig";
 import { formatDate } from "../../lib/date";
@@ -45,20 +45,21 @@ export default function CareLogScreen({ log }: { log: LogEntry[] }) {
             <div style={{ fontSize: 12, fontWeight: 600, color: "var(--color-muted-foreground)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10, paddingBottom: 6, borderBottom: "2px solid var(--color-border)" }}>
               {formatDate(date)}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "max-content 1fr", columnGap: 12, alignItems: "start" }}>
               {entries.map((entry, i) => {
                 const tc = TYPE_CONFIG[entry.type];
                 return (
-                  <div key={entry.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: i < entries.length - 1 ? "1px solid var(--color-border)" : "none" }}>
-                    <div className="min-w-28 shrink-0" style={{ paddingTop: 2 }}>
+                  <Fragment key={entry.id}>
+                    <div style={{ paddingTop: 14, paddingBottom: 12 }}>
                       <Pill label={tc.label} color={tc.color} bg={tc.bg} />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ paddingTop: 12, paddingBottom: 12 }}>
                       <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{entry.title}</div>
                       <div style={{ fontSize: 13, color: "var(--color-muted-foreground)", marginBottom: 3, lineHeight: 1.4 }}>{entry.detail}</div>
                       <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{entry.time} · {entry.loggedBy}</div>
                     </div>
-                  </div>
+                    {i < entries.length - 1 && <div style={{ gridColumn: "1 / -1", borderBottom: "1px solid var(--color-border)" }} />}
+                  </Fragment>
                 );
               })}
             </div>
