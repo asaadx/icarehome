@@ -39,3 +39,19 @@ Every mutating function in every CRUD hook needs a paired inverse (`addMedicatio
 ### Scope when built
 
 Touches all 25 `.tsx` files with inline styles — no logic changes, pure styling migration. Should land as its own PR (or a short stack of primitives-first, then screens) with before/after screenshots per screen, not folded into a feature or bugfix PR.
+
+## Extract shared components for repeated row/action patterns
+
+**Raised in:** `fix/action-icons-and-log-alignment` (PR #19) UI consistency pass — fixed the same "Edit/Delete buttons missing icons" bug three separate times (Routines + Health Log in one commit, Caregivers in the next, after the user spotted it was still missing there) because the icon+text action-button pair is copy-pasted JSX in every screen rather than a shared component. The pill-next-to-text list row (Dashboard Recent Activity, Care Log) had the identical problem: the same layout was duplicated across two files and drifted out of sync (alignment fixed in one place, not the other) before being standardized.
+
+**Why deferred:** both fixes were already in flight as part of a UI-nitpick pass; extracting components is a structural refactor with its own review surface (props API, call-site migration, no behavior change to verify) and doesn't belong mixed into a bugfix diff.
+
+### Shape
+
+- **`RecordActions`** (name TBD) — wraps the `<div style={{display:"flex",gap:8,marginTop:12}}><ActionButton .../><ActionButton .../></div>` pair currently duplicated in `RoutinesScreen`, `HealthLogScreen` (×2, symptom and incident cards), and `CaregiversScreen`. Props: `onEdit: () => void`, `onDelete: () => void`, and an optional `deleteLabel` (defaults to `"Delete"`; Caregivers uses `"Remove"`). Renders the two `ActionButton`s with `PencilIcon`/`TrashIcon` baked in, so there's exactly one place that decides what an edit/delete pair looks like.
+- **`TypeLogRow`** (name TBD) — wraps the `Fragment` pill-cell/text-cell/divider triple duplicated in `DashboardScreen`'s Recent Activity and `CareLogScreen`'s entries. Props: `entry: LogEntry`, `isLast: boolean`, and a `variant` flag for Care Log's extra `entry.detail` line (Dashboard doesn't render it). The fixed-width pill column (`TYPE_LABEL_MAX_CHARS` ch calc) lives inside this component instead of being copy-pasted, so a future spacing tweak is a one-file change instead of a "did we get both pages" grep.
+- Both call sites already pass identical prop shapes today (they were just fixed to be identical), so this is a mechanical extraction, not a design exercise — the risk is purely in verifying no visual regression across all 6 screens touched.
+
+### Scope when built
+
+Touches `RoutinesScreen`, `HealthLogScreen`, `CaregiversScreen` (→ `RecordActions`) and `DashboardScreen`, `CareLogScreen` (→ `TypeLogRow`), plus two new files in `src/components/ui/`. Pure extraction, no behavior change — verify by diffing rendered output/screenshots per screen before and after.
