@@ -6,10 +6,9 @@ import PageHeader from "../ui/PageHeader";
 import Card from "../ui/Card";
 import CheckCircle from "../ui/CheckCircle";
 import Fab from "../ui/Fab";
+import ActionButton from "../ui/ActionButton";
+import { PencilIcon, TrashIcon } from "../ui/icons";
 import RoutineForm from "./RoutineForm";
-
-const editBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-primary)", background: "var(--color-secondary)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
-const deleteBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-danger)", background: "var(--color-danger-bg)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
 
 export default function RoutinesScreen({
   routines,
@@ -92,8 +91,8 @@ export default function RoutinesScreen({
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                <button onClick={() => setEditingId(routine.id)} style={editBtnStyle}>Edit</button>
-                <button onClick={() => onDeleteRoutine(routine.id)} style={deleteBtnStyle}>Delete</button>
+                <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => setEditingId(routine.id)} />
+                <ActionButton icon={<TrashIcon size={16} />} label="Delete" tone="danger" mode="icon-text" onClick={() => onDeleteRoutine(routine.id)} />
               </div>
             </Card>
           );
