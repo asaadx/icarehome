@@ -76,7 +76,7 @@ export default function MedicationsScreen({
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <div style={{ fontSize: 16, fontWeight: 600 }}>{med.name}</div>
-                    <ActionButton icon={<PencilIcon size={13} />} label="Edit" tone="primary" mode="icon" size={24} onClick={() => setEditingId(med.id)} />
+                    <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => setEditingId(med.id)} />
                   </div>
                   <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginTop: 2 }}>{med.dose} · {med.purpose}</div>
                 </div>

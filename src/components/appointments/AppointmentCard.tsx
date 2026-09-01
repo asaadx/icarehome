@@ -28,7 +28,7 @@ export default function AppointmentCard({
             <div style={{ fontSize: 16, fontWeight: 600 }}>{appt.provider}</div>
             <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{appt.specialty}</div>
           </div>
-          <ActionButton icon={<PencilIcon size={13} />} label="Edit appointment" tone="primary" mode="icon" size={24} onClick={() => onEdit(appt.id)} />
+          <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => onEdit(appt.id)} />
         </div>
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: !isPast && days <= 7 ? "var(--color-danger)" : "var(--color-foreground)" }}>
@@ -67,7 +67,7 @@ export default function AppointmentCard({
       {!isPast && (
         <div style={{ display: "flex", gap: 8, marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--color-border)" }}>
           <ActionButton icon={<CheckIcon size={16} />} label="Completed" tone="success" mode="icon-text" onClick={() => onComplete(appt.id)} />
-          <ActionButton icon={<XIcon size={16} />} label="Cancel" tone="danger" mode="icon-text" onClick={() => onCancelAppt(appt.id)} />
+          <ActionButton icon={<XIcon size={16} />} label="Cancel" tone="danger" mode="icon-text" onClick={() => { if (window.confirm(`Cancel the appointment with ${appt.provider}? This cannot be undone.`)) onCancelAppt(appt.id); }} />
         </div>
       )}
 
