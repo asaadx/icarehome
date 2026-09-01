@@ -50,7 +50,7 @@ export default function CareLogScreen({ log }: { log: LogEntry[] }) {
                 const tc = TYPE_CONFIG[entry.type];
                 return (
                   <div key={entry.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: i < entries.length - 1 ? "1px solid var(--color-border)" : "none" }}>
-                    <div style={{ paddingTop: 2 }}>
+                    <div className="min-w-28 shrink-0" style={{ paddingTop: 2 }}>
                       <Pill label={tc.label} color={tc.color} bg={tc.bg} />
                     </div>
                     <div style={{ flex: 1 }}>
