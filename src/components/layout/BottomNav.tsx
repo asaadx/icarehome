@@ -33,7 +33,7 @@ export default function BottomNav({
             onClick={() => onNavigate(item.id)}
             style={{
               flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              gap: 3, padding: "10px 4px 8px", border: "none", background: "transparent", cursor: "pointer",
+              gap: 3, padding: "10px 2px 8px", border: "none", background: "transparent", cursor: "pointer",
             }}
           >
             {item.icon(active)}
@@ -49,13 +49,13 @@ export default function BottomNav({
         onClick={onToggleMore}
         style={{
           flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-          gap: 3, padding: "10px 4px 8px", border: "none", background: "transparent", cursor: "pointer",
+          gap: 3, padding: "10px 2px 8px", border: "none", background: "transparent", cursor: "pointer",
         }}
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={isMoreScreen || showMore ? "var(--color-primary)" : "var(--color-muted-foreground)"} strokeWidth="2" strokeLinecap="round">
           <circle cx="12" cy="12" r="1" fill="currentColor" /><circle cx="19" cy="12" r="1" fill="currentColor" /><circle cx="5" cy="12" r="1" fill="currentColor" />
         </svg>
-        <span style={{ fontSize: 10, fontWeight: isMoreScreen || showMore ? 600 : 400, color: isMoreScreen || showMore ? "var(--color-primary)" : "var(--color-muted-foreground)" }}>
+        <span style={{ fontSize: 12, fontWeight: isMoreScreen || showMore ? 600 : 400, color: isMoreScreen || showMore ? "var(--color-primary)" : "var(--color-muted-foreground)" }}>
           More
         </span>
       </button>
