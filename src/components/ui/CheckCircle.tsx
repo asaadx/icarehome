@@ -4,7 +4,7 @@ export default function CheckCircle({ checked, onChange }: { checked: boolean; o
       onClick={onChange}
       aria-pressed={checked}
       style={{
-        width: 28, height: 28, borderRadius: "50%",
+        width: 44, height: 44, borderRadius: "50%",
         border: checked ? "none" : "2px solid var(--color-border)",
         background: checked ? "var(--color-success)" : "#fff",
         cursor: "pointer", flexShrink: 0,
@@ -13,7 +13,7 @@ export default function CheckCircle({ checked, onChange }: { checked: boolean; o
       }}
     >
       {checked && (
-        <svg width="14" height="14" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <svg width="22" height="22" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
       )}
     </button>
   );
