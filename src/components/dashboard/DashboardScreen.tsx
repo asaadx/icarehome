@@ -123,7 +123,9 @@ export default function DashboardScreen({
             const tc = TYPE_CONFIG[entry.type];
             return (
               <div key={entry.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: i < 4 ? "1px solid var(--color-border)" : "none" }}>
-                <Pill label={tc.label} color={tc.color} bg={tc.bg} />
+                <div style={{ paddingTop: 2 }}>
+                  <Pill label={tc.label} color={tc.color} bg={tc.bg} />
+                </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>{entry.title}</div>
                   <div style={{ fontSize: 13, color: "var(--color-muted-foreground)" }}>{entry.time} · {entry.loggedBy}</div>
