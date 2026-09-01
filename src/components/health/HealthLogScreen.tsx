@@ -78,6 +78,8 @@ export default function HealthLogScreen({
   }
 
   function handleDelete(ev: HealthEvent) {
+    const label = ev.kind === "symptom" ? ev.symptom : ev.type;
+    if (!window.confirm(`Delete this ${ev.kind} entry ("${label}")? This cannot be undone.`)) return;
     if (ev.kind === "symptom") {
       onDeleteSymptom(ev.id);
     } else {
