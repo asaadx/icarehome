@@ -55,3 +55,36 @@ Touches all 25 `.tsx` files with inline styles — no logic changes, pure stylin
 ### Scope when built
 
 Touches `RoutinesScreen`, `HealthLogScreen`, `CaregiversScreen` (→ `RecordActions`) and `DashboardScreen`, `CareLogScreen` (→ `TypeLogRow`), plus two new files in `src/components/ui/`. Pure extraction, no behavior change — verify by diffing rendered output/screenshots per screen before and after.
+
+## Read Only Mode
+
+**Raised in:** UI/UX research conversation (2026-08-31) — came up alongside RBAC below as a lighter-weight variant worth scoping separately.
+
+**Why deferred:** no interactive control in the app currently supports being disabled — every mutation is a bare `onClick` on a `button`/`ActionButton`/`CheckCircle`/`Fab`. Read Only Mode isn't a screen or a feature, it's a cross-cutting constraint on every existing control, so it needs a plan for *how* controls get disabled before it's buildable, not just a toggle.
+
+### Shape
+
+- A single boolean, sourced from e.g. a share-link query param or an in-app toggle (not real auth — there's no backend) — for the use case of showing a read-only status view to someone who shouldn't (or, given the target audience, easily could-by-accident) edit anything: an out-of-town relative, or the patient herself.
+- Doesn't require the full RBAC model below to be useful on its own — one flag, one meaning, threaded via context (`ReadOnlyProvider`, mirroring the pattern already parked for `UndoProvider`) rather than prop-drilled through every screen.
+- Every mutating control needs to respect it: `Fab` (hide), `ActionButton` (disable + dim, don't just hide — a mature-audience-friendly UI should show *why* an action isn't available rather than have it silently vanish), `CheckCircle` (disable), the raw `<button>`s in forms (disable submit). This is exactly the surface the "Extract shared components" entry above (`RecordActions`) already centralizes — worth sequencing Read Only Mode *after* that extraction so there's one `disabled` prop to thread instead of patching every screen individually.
+- If RBAC (below) ships first, Read Only Mode becomes just its most restrictive role rather than a separate mechanism — decide which lands first before building both.
+
+### Scope when built
+
+A context/provider plus a `disabled` (or `readOnly`) prop on every shared interactive primitive in `src/components/ui/` (`ActionButton`, `Fab`, `CheckCircle`, plus form submit buttons). No screen-level logic changes — screens don't need to know Read Only Mode exists if the primitives they already use handle it.
+
+## RBAC (role-based permissions)
+
+**Raised in:** UI/UX research conversation (2026-08-31).
+
+**Why deferred:** the app has no identity concept at all today to hang permissions off of — every mutation hardcodes `loggedBy: "You"` (see every hook in `src/hooks/`: `useMedications`, `useAppointments`, `useRoutines`, `useHealthEvents`, `useCaregivers`), and `Caregiver.role` (`src/types/domain.ts`) is a free-text display label ("Primary Family Caregiver", "Home Health Aide", "Neurologist", …) with zero permission semantics. RBAC needs a "who am I" concept to exist first, which is a bigger foundational change than a permissions layer on top of one.
+
+### Shape
+
+- **Current user:** since there's no backend/login, the realistic version for this app is an "acting as" selector — pick one of the existing `caregivers` records as "you" (persisted locally), rather than building real authentication. Replaces every hardcoded `"You"` with the selected caregiver's actual name, which is also a correctness fix independent of RBAC (the audit log currently can't actually tell caregivers apart).
+- **Permission tiers derived from existing roles**, not a new parallel enum: family caregivers (full CRUD), professional aides (can toggle doses/routines done, log symptoms/incidents, cannot edit medication dosages or delete records), physicians (view-only across the board, per the existing `relationship: "Physician"` caregivers already in the seed data). Map `Caregiver.relationship`/`role` → a permission tier rather than hand-assigning a new field per caregiver.
+- **Enforcement point:** same primitives Read Only Mode above depends on (`ActionButton`, `Fab`, `CheckCircle`) — a permission check is just a more granular version of the same `disabled` mechanism, gated per-action instead of globally. Build these two in whichever order makes the other simpler, not independently.
+
+### Scope when built
+
+A current-user context (new), a role→permission-tier mapping (new), and threading permission checks through every mutating control app-wide — the same primitives as Read Only Mode, plus per-screen decisions about which specific actions each tier can perform (needs a product decision, not just an engineering one, before implementation: e.g. can a Home Health Aide discontinue a medication?).
