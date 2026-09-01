@@ -31,9 +31,24 @@ export default function DashboardScreen({
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Patient banner */}
       <Card style={{ background: "var(--color-primary)", color: "#fff" }}>
-        <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 2 }}>{PATIENT.name}</div>
-        <div style={{ fontSize: 13, opacity: 0.85 }}>Age {PATIENT.age} · {PATIENT.conditions[0]}</div>
-        <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{PATIENT.conditions[1]}</div>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#fff", color: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, flexShrink: 0 }}>
+            {PATIENT.name.split(" ").map((w) => w[0]).join("")}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 3 }}>{PATIENT.name}</div>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>Age {PATIENT.age} · {PATIENT.conditions.join(" · ")}</div>
+          </div>
+        </div>
+        {PATIENT.allergies.length > 0 && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.3)", display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>⚠ Allergic to:</span>
+            {PATIENT.allergies.map((a) => (
+              <Pill key={a} label={a} color="var(--color-danger)" bg="#fff" />
+            ))}
+          </div>
+        )}
+        <div style={{ marginTop: 10, fontSize: 13, fontWeight: 500 }}>Primary doctor: {PATIENT.primaryDoctor}</div>
       </Card>
 
       {/* Medication progress */}
