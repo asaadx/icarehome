@@ -39,31 +39,5 @@ export function useRoutines(addLogEntry: (entry: Omit<LogEntry, "id" | "date" | 
     }
   }
 
-  function moveRoutine(id: string, direction: "up" | "down") {
-    setRoutines((prev) => {
-      const target = prev.find((r) => r.id === id);
-      if (!target) return prev;
-      const sameCategoryIndices = prev.reduce<number[]>((acc, r, i) => {
-        if (r.category === target.category) acc.push(i);
-        return acc;
-      }, []);
-      const targetIndex = prev.findIndex((r) => r.id === id);
-      const posInCategory = sameCategoryIndices.indexOf(targetIndex);
-      if (direction === "up") {
-        if (posInCategory <= 0) return prev;
-        const swapIndex = sameCategoryIndices[posInCategory - 1];
-        const next = [...prev];
-        [next[targetIndex], next[swapIndex]] = [next[swapIndex], next[targetIndex]];
-        return next;
-      } else {
-        if (posInCategory === -1 || posInCategory >= sameCategoryIndices.length - 1) return prev;
-        const swapIndex = sameCategoryIndices[posInCategory + 1];
-        const next = [...prev];
-        [next[targetIndex], next[swapIndex]] = [next[swapIndex], next[targetIndex]];
-        return next;
-      }
-    });
-  }
-
-  return { routines, addRoutine, updateRoutine, deleteRoutine, toggleRoutineDone, moveRoutine };
+  return { routines, addRoutine, updateRoutine, deleteRoutine, toggleRoutineDone };
 }
