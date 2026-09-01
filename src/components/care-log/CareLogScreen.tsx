@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import type { LogEntry } from "../../types/domain";
-import { TYPE_CONFIG } from "../../lib/logTypeConfig";
+import { TYPE_CONFIG, TYPE_LABEL_MAX_CHARS } from "../../lib/logTypeConfig";
 import { formatDate } from "../../lib/date";
 import PageHeader from "../ui/PageHeader";
 import Pill from "../ui/Pill";
@@ -49,7 +49,7 @@ export default function CareLogScreen({ log }: { log: LogEntry[] }) {
               const tc = TYPE_CONFIG[entry.type];
               return (
                 <Fragment key={entry.id}>
-                  <div style={{ paddingTop: 14, paddingBottom: 12 }}>
+                  <div style={{ minWidth: `calc(${TYPE_LABEL_MAX_CHARS}ch + 26px)`, paddingTop: 14, paddingBottom: 12 }}>
                     <Pill label={tc.label} color={tc.color} bg={tc.bg} />
                   </div>
                   <div style={{ paddingTop: 12, paddingBottom: 12 }}>
