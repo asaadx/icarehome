@@ -6,10 +6,9 @@ import Card from "../ui/Card";
 import Avatar from "../ui/Avatar";
 import Pill from "../ui/Pill";
 import Fab from "../ui/Fab";
+import ActionButton from "../ui/ActionButton";
+import { PencilIcon, TrashIcon } from "../ui/icons";
 import CaregiverForm from "./CaregiverForm";
-
-const editBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-primary)", background: "var(--color-secondary)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
-const deleteBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-danger)", background: "var(--color-danger-bg)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
 
 export default function CaregiversScreen({
   caregivers,
@@ -79,9 +78,9 @@ export default function CaregiversScreen({
                     <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-muted-foreground)", width: 64, flexShrink: 0, paddingTop: 1 }}>Schedule</div>
                     <div style={{ fontSize: 15 }}>{c.schedule}</div>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={(e) => { e.stopPropagation(); setEditingId(c.id); }} style={editBtnStyle}>Edit</button>
-                    <button onClick={(e) => { e.stopPropagation(); onDeleteCaregiver(c.id); }} style={deleteBtnStyle}>Remove</button>
+                  <div style={{ display: "flex", gap: 8 }} onClick={(e) => e.stopPropagation()}>
+                    <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => setEditingId(c.id)} />
+                    <ActionButton icon={<TrashIcon size={16} />} label="Remove" tone="danger" mode="icon-text" onClick={() => onDeleteCaregiver(c.id)} />
                   </div>
                 </div>
               )}

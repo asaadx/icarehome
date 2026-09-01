@@ -6,13 +6,12 @@ import Card from "../ui/Card";
 import Pill from "../ui/Pill";
 import SeverityBar from "../ui/SeverityBar";
 import Fab from "../ui/Fab";
+import ActionButton from "../ui/ActionButton";
+import { PencilIcon, TrashIcon } from "../ui/icons";
 import { formatDate, eventTimestamp } from "../../lib/date";
 import { kindToggleStyle } from "./kindToggleStyle";
 import SymptomForm from "./SymptomForm";
 import IncidentForm from "./IncidentForm";
-
-const editBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-primary)", background: "var(--color-secondary)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
-const deleteBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-danger)", background: "var(--color-danger-bg)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
 
 const sevConfig: Record<string, { color: string; bg: string }> = {
   minor: { color: "var(--color-muted-foreground)", bg: "var(--color-muted)" },
@@ -133,8 +132,8 @@ export default function HealthLogScreen({
               <SeverityBar level={ev.severity} showLabel />
               {ev.notes && <div style={{ fontSize: 14, color: "var(--color-muted-foreground)", marginTop: 8, lineHeight: 1.5 }}>{ev.notes}</div>}
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                <button onClick={() => setEditingEvent(ev)} style={editBtnStyle}>Edit</button>
-                <button onClick={() => handleDelete(ev)} style={deleteBtnStyle}>Delete</button>
+                <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => setEditingEvent(ev)} />
+                <ActionButton icon={<TrashIcon size={16} />} label="Delete" tone="danger" mode="icon-text" onClick={() => handleDelete(ev)} />
               </div>
             </Card>
           ) : (
@@ -152,8 +151,8 @@ export default function HealthLogScreen({
                 <div style={{ fontSize: 14, lineHeight: 1.5 }}>{ev.response}</div>
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                <button onClick={() => setEditingEvent(ev)} style={editBtnStyle}>Edit</button>
-                <button onClick={() => handleDelete(ev)} style={deleteBtnStyle}>Delete</button>
+                <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => setEditingEvent(ev)} />
+                <ActionButton icon={<TrashIcon size={16} />} label="Delete" tone="danger" mode="icon-text" onClick={() => handleDelete(ev)} />
               </div>
             </Card>
           )
