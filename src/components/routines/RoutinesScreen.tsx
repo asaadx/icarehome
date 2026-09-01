@@ -47,6 +47,12 @@ export default function RoutinesScreen({
     setEditingId(null);
   }
 
+  function handleDelete(routine: Routine) {
+    if (window.confirm(`Delete routine "${routine.title}"? This cannot be undone.`)) {
+      onDeleteRoutine(routine.id);
+    }
+  }
+
   return (
     <div>
       <PageHeader title="Daily Routines" subtitle="Care schedule and medication timing" />
@@ -92,7 +98,7 @@ export default function RoutinesScreen({
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                 <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => setEditingId(routine.id)} />
-                <ActionButton icon={<TrashIcon size={16} />} label="Delete" tone="danger" mode="icon-text" onClick={() => onDeleteRoutine(routine.id)} />
+                <ActionButton icon={<TrashIcon size={16} />} label="Delete" tone="danger" mode="icon-text" onClick={() => handleDelete(routine)} />
               </div>
             </Card>
           );

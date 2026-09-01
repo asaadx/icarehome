@@ -36,6 +36,12 @@ export default function CaregiversScreen({
     setEditingId(null);
   }
 
+  function handleDelete(caregiver: Caregiver) {
+    if (window.confirm(`Remove ${caregiver.name} from your care team? This cannot be undone.`)) {
+      onDeleteCaregiver(caregiver.id);
+    }
+  }
+
   return (
     <div>
       <PageHeader title="Care Team" subtitle="Family, aides, and physicians" />
@@ -80,7 +86,7 @@ export default function CaregiversScreen({
                   </div>
                   <div style={{ display: "flex", gap: 8 }} onClick={(e) => e.stopPropagation()}>
                     <ActionButton icon={<PencilIcon size={16} />} label="Edit" tone="primary" mode="icon-text" onClick={() => setEditingId(c.id)} />
-                    <ActionButton icon={<TrashIcon size={16} />} label="Remove" tone="danger" mode="icon-text" onClick={() => onDeleteCaregiver(c.id)} />
+                    <ActionButton icon={<TrashIcon size={16} />} label="Remove" tone="danger" mode="icon-text" onClick={() => handleDelete(c)} />
                   </div>
                 </div>
               )}
