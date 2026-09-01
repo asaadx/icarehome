@@ -20,3 +20,11 @@ export function eventTimestamp(date: string, time: string) {
   const minute = match ? parseInt(match[2], 10) : 0;
   return new Date(`${date}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`).getTime();
 }
+
+export function timeToMinutes(time: string) {
+  const match = time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (!match) return 0;
+  let hour = parseInt(match[1], 10) % 12;
+  if (match[3] && /pm/i.test(match[3])) hour += 12;
+  return hour * 60 + parseInt(match[2], 10);
+}

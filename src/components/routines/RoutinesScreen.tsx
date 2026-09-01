@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Routine } from "../../types/domain";
 import type { RoutineInput } from "../../hooks/useRoutines";
+import { timeToMinutes } from "../../lib/date";
 import PageHeader from "../ui/PageHeader";
 import Card from "../ui/Card";
 import CheckCircle from "../ui/CheckCircle";
@@ -9,7 +10,6 @@ import RoutineForm from "./RoutineForm";
 
 const editBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-primary)", background: "var(--color-secondary)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
 const deleteBtnStyle = { fontSize: 13, fontWeight: 600, color: "var(--color-danger)", background: "var(--color-danger-bg)", border: "none", cursor: "pointer", padding: "7px 14px", borderRadius: 20, fontFamily: "inherit", minHeight: 34 } as const;
-const moveBtnStyle = { width: 30, height: 30, borderRadius: 8, border: "none", background: "var(--color-muted)", color: "var(--color-muted-foreground)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } as const;
 
 export default function RoutinesScreen({
   routines,
@@ -17,14 +17,12 @@ export default function RoutinesScreen({
   onUpdateRoutine,
   onDeleteRoutine,
   onToggleRoutineDone,
-  onMoveRoutine,
 }: {
   routines: Routine[];
   onAddRoutine: (input: RoutineInput) => void;
   onUpdateRoutine: (id: string, input: RoutineInput) => void;
   onDeleteRoutine: (id: string) => void;
   onToggleRoutineDone: (id: string) => void;
-  onMoveRoutine: (id: string, direction: "up" | "down") => void;
 }) {
   const cats: { id: Routine["category"]; label: string; color: string }[] = [
     { id: "morning", label: "Morning", color: "#E8A838" },
@@ -38,7 +36,7 @@ export default function RoutinesScreen({
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const filtered = routines.filter((r) => r.category === active);
+  const filtered = routines.filter((r) => r.category === active).sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
   function handleAdd(input: RoutineInput) {
     onAddRoutine(input);
@@ -75,7 +73,7 @@ export default function RoutinesScreen({
       {showAddForm && <RoutineForm onAdd={handleAdd} onCancel={() => setShowAddForm(false)} defaultCategory={active} />}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {filtered.map((routine, i) => {
+        {filtered.map((routine) => {
           if (editingId === routine.id) {
             return <RoutineForm key={routine.id} routine={routine} onSave={handleSave} onCancel={() => setEditingId(null)} />;
           }
@@ -91,22 +89,6 @@ export default function RoutinesScreen({
                     <div style={{ fontSize: 13, color: "var(--color-muted-foreground)", lineHeight: 1.5, marginBottom: 6 }}>{routine.notes}</div>
                   )}
                   <div style={{ fontSize: 12, color: "var(--color-muted-foreground)" }}>Assigned to: {routine.assignedTo}</div>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {i > 0 && (
-                    <button onClick={() => onMoveRoutine(routine.id, "up")} aria-label="Move up" style={moveBtnStyle}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
-                      </svg>
-                    </button>
-                  )}
-                  {i < filtered.length - 1 && (
-                    <button onClick={() => onMoveRoutine(routine.id, "down")} aria-label="Move down" style={moveBtnStyle}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
