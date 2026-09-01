@@ -88,3 +88,60 @@ A context/provider plus a `disabled` (or `readOnly`) prop on every shared intera
 ### Scope when built
 
 A current-user context (new), a role→permission-tier mapping (new), and threading permission checks through every mutating control app-wide — the same primitives as Read Only Mode, plus per-screen decisions about which specific actions each tier can perform (needs a product decision, not just an engineering one, before implementation: e.g. can a Home Health Aide discontinue a medication?).
+
+## Patient banner redesign — safety-first, WCAG-compliant contrast
+
+**Raised in:** UI/UX research subagent (`designer`, 2026-09-01), commissioned to research mature/older-adult UI/UX design principles and apply them to this app.
+
+**Why deferred:** research/analysis task, not scoped as an implementation — needs a design decision on the redesign direction before building.
+
+### Findings
+
+The Dashboard patient banner (`src/components/dashboard/DashboardScreen.tsx:33-37`) fails WCAG contrast on the two lines carrying the most safety-relevant information: name (18px bold, full opacity) measures 5.22:1 against `--color-primary` and passes, but age+condition (13px, `opacity: 0.85`) measures **4.24:1 — fails** the 4.5:1 AA minimum, and the second condition line (12px, `opacity: 0.7`) measures **3.40:1 — fails badly**, under even the 3:1 large-text floor. The banner uses opacity to de-emphasize instead of weight, which the research flags directly as a common pattern that disproportionately hurts older/low-vision users. It also omits `PATIENT.allergies` (`src/data/seed.ts:5-13` has `["Penicillin", "Sulfa drugs"]`) entirely — for a multi-caregiver coordination app, an allergy invisible at a glance is a safety gap: a fill-in aide who never opens Care Team could plausibly not know about it. No photo/avatar despite the app already having an `Avatar` component (`src/components/ui/Avatar.tsx`, used in `CaregiversScreen.tsx:58`) — recognition beats reading for this audience.
+
+### Shape
+
+- Add a high-contrast allergy alert row using the existing `Pill` component in `--color-danger`/`--color-danger-bg` tones (already used elsewhere for incidents), always full-opacity — never hidden behind fade.
+- Replace the two opacity-based lines with full-opacity text using existing `Pill`/chip conventions (matching status-pill styling used elsewhere), and bump the name to an unambiguous large-text size (≥24px).
+- Add `Avatar` (reusing the `CaregiversScreen.tsx` pattern) plus a one-line primary-doctor row with tap-to-call, mirroring the existing `tel:`/`mailto:` pattern already implemented at `CaregiversScreen.tsx:71,75`.
+
+### Scope when built
+
+Contained to `DashboardScreen.tsx`'s banner block plus reusing `Avatar`/`Pill`, no data-model changes (`PATIENT.allergies`/`primaryDoctor` already exist in `src/data/seed.ts`, just unused on this screen).
+
+## Responsive navigation — promote Care Team, drop "More" at wider viewports
+
+**Raised in:** same UI/UX research subagent, prompted specifically about whether nav items should move between the bottom bar and the "More" menu based on screen size.
+
+**Why deferred:** research/analysis task; also blocked on the "Migrate inline styles to Tailwind" and general responsive-layout questions being unresolved for the rest of the app (this would be the first responsive breakpoint anywhere in the codebase).
+
+### Findings
+
+`NAV_ITEMS`/`MORE_ITEMS` (`src/components/layout/navItems.tsx:6-52`) are hardcoded static arrays — 5 items always in the bottom bar, 2 (Care Team, Log) always hidden behind an unlabeled "More" button, with zero `matchMedia`/viewport logic anywhere in `BottomNav.tsx`, `MoreMenu.tsx`, or `App.tsx`. `App.tsx:43` hardcodes `maxWidth: 480` on the root container with no breakpoint anywhere in the codebase, so the app renders as a fixed phone-width column even on a laptop browser — plausible for adult-child caregivers coordinating from a desk — and "More" stays exactly as cramped regardless of actual available width. Research is explicit that hidden/overflow ("hamburger"-style) navigation gets disproportionately fewer interactions from older users and should be avoided when avoidable. Burying **Care Team** — the screen listing who the other caregivers are and how to reach them, central to this app's entire multi-caregiver premise — behind an unlabeled overflow icon works against the app's own purpose.
+
+### Shape
+
+- Promote `{ id: "caregivers", label: "Care Team" }` out of `MORE_ITEMS` into `NAV_ITEMS` in `navItems.tsx` regardless of viewport work — this alone doesn't need responsive logic, just a reordering (swap with a lower-frequency item, since Routines/Health are both also reachable from Dashboard cards/FAB).
+- Keep the "More" label at the same 12px+ size as the other nav labels — currently 10px (`BottomNav.tsx:58-60`), smaller than the five it sits beside for no reason.
+- Add a `useViewport`/`matchMedia` hook (nonexistent anywhere today) that, above ~700–768px, drops `App.tsx`'s `maxWidth: 480` constraint and renders the full merged `NAV_ITEMS + MORE_ITEMS` list with no "More" button at all — a labeled left-side rail is more conventional than a bottom bar at that width. Below that width, keep a bounded 5–6 item bottom bar (7 items uncapped would push touch targets below the 44–48px senior-recommended minimum on a 480px-wide bar).
+
+### Scope when built
+
+The Care Team promotion is a one-line reorder in `navItems.tsx`, independently shippable today. The viewport-responsive piece is new (a hook plus conditional layout in `App.tsx`/`BottomNav.tsx`) and is the first responsive breakpoint in the codebase — worth sequencing after (or alongside) the Tailwind migration above, since Tailwind's breakpoint utilities (`md:`, `lg:`) are the natural way to express it rather than hand-rolled `matchMedia` + inline styles.
+
+## Senior-UX accessibility fixes across screens
+
+**Raised in:** same UI/UX research subagent — smaller, independently-fixable findings surfaced while researching the two items above.
+
+**Why deferred:** research/analysis task; each is small enough to be its own quick fix but is batched here since they share the same audit pass and rationale.
+
+### Findings & fixes
+
+- **Inconsistent destructive-action confirmation.** `MedicationsScreen.tsx:43-46` confirms via `window.confirm` before discontinuing a medication, but `RoutinesScreen.tsx:95`, `HealthLogScreen.tsx:80-86,136,155`, `CaregiversScreen.tsx:83`, and `AppointmentCard.tsx:70` all delete/cancel immediately on click with no confirmation — and these buttons sit directly adjacent to non-destructive Edit/Complete buttons in the same small flex row, so a mis-tap (more likely for this audience/a Parkinson's patient's own caregivers) silently deletes a record with no recovery path. Fix: apply the same `window.confirm` pattern to all four other call sites (until the parked "Undo for CRUD actions" entry above lands, which is the more durable fix).
+- **Sub-minimum touch target on the highest-stakes daily control.** `CheckCircle` (`src/components/ui/CheckCircle.tsx:7`) is 28×28px — the control used multiple times a day to confirm Eleanor received Parkinson's/diabetes medication — well under the 44–48px senior-recommended size for a frequent, consequential control. Fix: enlarge to ≥44px and/or make the whole dose row (`MedicationsScreen.tsx:90-93`) clickable, not just the circle.
+- **Icon-only Edit buttons with no visible label.** `MedicationsScreen.tsx:79` and `AppointmentCard.tsx:31` use `ActionButton` in `mode="icon"` at `size={24}` — smaller than the senior-recommended minimum and no persistently visible text (only `aria-label`/`title`, invisible to a sighted user scanning the screen), inconsistent with every other `ActionButton` in the app which uses `mode="icon-text"`. Fix: switch both to `icon-text` mode, matching the established pattern.
+- **Bottom-nav label size.** Covered above (10px "More" label, smaller than the 12px it sits beside) — fold into the nav work above rather than fixing in isolation.
+
+### Scope when built
+
+Four small, independent fixes across `RoutinesScreen.tsx`, `HealthLogScreen.tsx`, `CaregiversScreen.tsx`, `AppointmentCard.tsx` (confirmation), `CheckCircle.tsx` + `MedicationsScreen.tsx` (touch target), and `MedicationsScreen.tsx`/`AppointmentCard.tsx` (icon-only buttons) — each shippable alone, no shared blocker.
